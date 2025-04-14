@@ -288,6 +288,17 @@ class Xml extends CI_Controller {
             $data_emissao = str_replace('T', ' ', (string)$inf_nfse->DataEmissao);
             $competencia = str_replace('T', ' ', (string)$inf_nfse->Competencia);
             
+            // Verificar se o CPF/CNPJ do tomador é igual ao do inquilino
+            $tomador_cpf_cnpj = isset($tomador_data['cpf_cnpj']) ? $tomador_data['cpf_cnpj'] : '';
+            $inquilino_cpf_cnpj = isset($inquilino_data['cpf_cnpj']) ? $inquilino_data['cpf_cnpj'] : '';
+            $cpf_cnpj_duplicado = false;
+            $observacoes = '';
+            
+            if (!empty($tomador_cpf_cnpj) && !empty($inquilino_cpf_cnpj) && $tomador_cpf_cnpj === $inquilino_cpf_cnpj) {
+                $cpf_cnpj_duplicado = true;
+                $observacoes = 'ATENÇÃO: O CPF/CNPJ do tomador é igual ao do inquilino. Verifique se os dados estão corretos.';
+            }
+            
             // Extrair dados da nota fiscal
             $nota_data = array(
                 'numero' => (string)$inf_nfse->Numero,
@@ -306,7 +317,8 @@ class Xml extends CI_Controller {
                 'imovel_id' => $imovel_id,
                 'batch_id' => $batch_id,
                 'descricao_servico' => isset($discriminacao_data['descricao_servico']) ? $discriminacao_data['descricao_servico'] : '',
-                'status' => 'importado'
+                'status' => $cpf_cnpj_duplicado ? 'revisar' : 'importado',
+                'observacoes' => $observacoes
             );
             
             $nota_id = $this->Nota_model->save($nota_data);
@@ -476,11 +488,22 @@ class Xml extends CI_Controller {
             }
         }
         
+        // Verificar status e observações
+        if (!isset($nota['status'])) {
+            $nota['status'] = 'importado';
+        }
+        
+        if (!isset($nota['observacoes'])) {
+            $nota['observacoes'] = '';
+        }
+        
         // Recuperar dados do imóvel, se existir
         if (!empty($nota['imovel_id'])) {
             $imovel = $this->Imovel_model->get_by_id($nota['imovel_id']);
             if ($imovel) {
                 $nota['imovel_endereco'] = $imovel['endereco'];
+                $nota['imovel_numero'] = $imovel['numero'];
+                $nota['imovel_complemento'] = $imovel['complemento'];
                 $nota['valor_aluguel'] = $imovel['valor_aluguel'];
             }
         }
@@ -526,6 +549,8 @@ class Xml extends CI_Controller {
             // Processamento do imóvel
             $imovel_id = $this->input->post('imovel_id');
             $imovel_endereco = $this->input->post('imovel_endereco');
+            $imovel_numero = $this->input->post('imovel_numero');
+            $imovel_complemento = $this->input->post('imovel_complemento');
             $valor_aluguel = $this->input->post('valor_aluguel');
             
             // Criar ou atualizar imóvel
@@ -534,6 +559,15 @@ class Xml extends CI_Controller {
                     'endereco' => $imovel_endereco,
                     'inquilino_id' => $inquilino_id
                 );
+                
+                // Adicionar o número e complemento se fornecidos
+                if (!empty($imovel_numero)) {
+                    $imovel_data['numero'] = $imovel_numero;
+                }
+                
+                if (!empty($imovel_complemento)) {
+                    $imovel_data['complemento'] = $imovel_complemento;
+                }
                 
                 if (!empty($valor_aluguel)) {
                     $imovel_data['valor_aluguel'] = $valor_aluguel;
@@ -547,12 +581,41 @@ class Xml extends CI_Controller {
                     $imovel_id = $this->Imovel_model->save($imovel_data);
                 }
             }
-            // Se selecionou um imóvel mas não preencheu o endereço, apenas atualizar o valor do aluguel
-            elseif (!empty($imovel_id) && !empty($valor_aluguel)) {
-                $this->Imovel_model->update($imovel_id, array(
-                    'valor_aluguel' => $valor_aluguel,
+            // Se selecionou um imóvel mas não preencheu o endereço, apenas atualizar os campos fornecidos
+            elseif (!empty($imovel_id)) {
+                $update_data = array(
                     'inquilino_id' => $inquilino_id
-                ));
+                );
+                
+                // Adicionar apenas os campos que foram preenchidos
+                if (!empty($valor_aluguel)) {
+                    $update_data['valor_aluguel'] = $valor_aluguel;
+                }
+                
+                if (!empty($imovel_numero)) {
+                    $update_data['numero'] = $imovel_numero;
+                }
+                
+                if (!empty($imovel_complemento)) {
+                    $update_data['complemento'] = $imovel_complemento;
+                }
+                
+                $this->Imovel_model->update($imovel_id, $update_data);
+            }
+            
+            // Verificar se o CPF/CNPJ do tomador é igual ao do inquilino
+            $tomador_id = $this->input->post('tomador_id');
+            $tomador = $this->Tomador_model->get_by_id($tomador_id);
+            $tomador_cpf_cnpj = $tomador ? $tomador['cpf_cnpj'] : '';
+            
+            $cpf_cnpj_duplicado = false;
+            $observacoes = '';
+            
+            if (!empty($inquilino_id) && !empty($tomador_cpf_cnpj) && !empty($inquilino_documento)) {
+                if ($tomador_cpf_cnpj === $inquilino_documento) {
+                    $cpf_cnpj_duplicado = true;
+                    $observacoes = 'ATENÇÃO: O CPF/CNPJ do tomador é igual ao do inquilino. Verifique se os dados estão corretos.';
+                }
             }
             
             // Atualizar a nota com os novos dados
@@ -570,7 +633,8 @@ class Xml extends CI_Controller {
                 'descricao_servico' => $this->input->post('descricao_servico'),
                 'prestador_id' => $this->input->post('prestador_id'),
                 'tomador_id' => $this->input->post('tomador_id'),
-                'status' => 'atualizado',
+                'status' => $cpf_cnpj_duplicado ? 'revisar' : 'atualizado',
+                'observacoes' => $cpf_cnpj_duplicado ? $observacoes : (isset($nota['observacoes']) ? $nota['observacoes'] : ''),
                 'editado_manualmente' => 1  // Marca como editado manualmente
             );
             

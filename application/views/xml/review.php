@@ -47,6 +47,23 @@
                     </div>
                     <?php endif; ?>
                     
+                    <?php 
+                    // Verificar se existem notas com CPF/CNPJ do tomador igual ao do inquilino
+                    $notas_com_cpf_cnpj_duplicado = false;
+                    foreach($notas as $nota) {
+                        if(isset($nota['status']) && $nota['status'] === 'revisar') {
+                            $notas_com_cpf_cnpj_duplicado = true;
+                            break;
+                        }
+                    }
+                    ?>
+                    
+                    <?php if($notas_com_cpf_cnpj_duplicado): ?>
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i> <strong>Atenção!</strong> Existem notas fiscais onde o CPF/CNPJ do tomador (proprietário) é igual ao do inquilino (locatário). Isso pode indicar um erro de cadastro. As notas com esta inconsistência estão destacadas em vermelho abaixo.
+                    </div>
+                    <?php endif; ?>
+                    
                     <?php if(empty($notas)): ?>
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle"></i> Nenhuma nota fiscal foi importada com este lote.
@@ -56,26 +73,30 @@
                         <table class="table table-striped table-hover">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Número</th>
+                                    <th>Número Nota</th>
                                     <th>Data Emissão</th>
-                                    <th>Prestador</th>
-                                    <th>Tomador</th>
-                                    <th>Inquilino</th>
-                                    <th>Valor (R$)</th>
-                                    <th width="150">Ações</th>
+                                    <th>Locador (Proprietário)</th>
+                                    <th>Locatário (Inquilino)</th>
+                                    <th>CPF/CNPJ Locatário</th>
+                                    <th>Endereço Imóvel</th>
+                                    <th>Valor Aluguel</th>
+                                    <th>Valor Comissão</th>
+                                    <th width="120">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php foreach($notas as $nota): ?>
-                                <tr>
+                                <tr class="<?= (isset($nota['status']) && $nota['status'] === 'revisar') ? 'table-danger' : '' ?>">
                                     <td>
                                         <?= $nota['numero'] ?>
                                         <?php if(isset($nota['editado_manualmente']) && $nota['editado_manualmente'] == 1): ?>
                                             <span class="badge bg-info" title="Editado manualmente"><i class="fas fa-user-edit"></i></span>
                                         <?php endif; ?>
+                                        <?php if(isset($nota['status']) && $nota['status'] === 'revisar'): ?>
+                                            <span class="badge bg-danger" title="<?= htmlspecialchars($nota['observacoes']) ?>"><i class="fas fa-exclamation-triangle"></i> Verificar</span>
+                                        <?php endif; ?>
                                     </td>
                                     <td><?= date('d/m/Y', strtotime($nota['data_emissao'])) ?></td>
-                                    <td><?= $nota['prestador_nome'] ?></td>
                                     <td><?= $nota['tomador_nome'] ?></td>
                                     <td>
                                         <?php if($nota['inquilino_id'] && isset($nota['inquilino_nome'])): ?>
@@ -84,7 +105,41 @@
                                             <span class="badge bg-warning text-dark">Não identificado</span>
                                         <?php endif; ?>
                                     </td>
-                                    <td><?= number_format($nota['valor_servicos'], 2, ',', '.') ?></td>
+                                    <td>
+                                        <?php if($nota['inquilino_id'] && isset($nota['inquilino_cpf_cnpj'])): ?>
+                                            <?php 
+                                            $cpf_cnpj_duplicado = false;
+                                            if (isset($nota['tomador_cpf_cnpj']) && isset($nota['inquilino_cpf_cnpj']) && 
+                                                !empty($nota['tomador_cpf_cnpj']) && !empty($nota['inquilino_cpf_cnpj']) && 
+                                                $nota['tomador_cpf_cnpj'] === $nota['inquilino_cpf_cnpj']) {
+                                                $cpf_cnpj_duplicado = true;
+                                            }
+                                            ?>
+                                            <span <?= $cpf_cnpj_duplicado ? 'class="text-danger fw-bold" data-bs-toggle="tooltip" data-bs-placement="top" title="ATENÇÃO: O CPF/CNPJ do inquilino é igual ao do proprietário! Isso pode indicar um erro de cadastro."' : '' ?>>
+                                                <?= $nota['inquilino_cpf_cnpj'] ?>
+                                                <?php if($cpf_cnpj_duplicado): ?>
+                                                    <i class="fas fa-exclamation-triangle text-danger"></i>
+                                                <?php endif; ?>
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="badge bg-warning text-dark">Não identificado</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <?php if($nota['imovel_id'] && isset($nota['imovel_endereco'])): ?>
+                                            <?= $nota['imovel_endereco'] ?>
+                                        <?php else: ?>
+                                            <span class="badge bg-warning text-dark">Não identificado</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <?php if($nota['imovel_id'] && isset($nota['valor_aluguel'])): ?>
+                                            R$ <?= number_format($nota['valor_aluguel'], 2, ',', '.') ?>
+                                        <?php else: ?>
+                                            <span class="badge bg-warning text-dark">Não definido</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>R$ <?= number_format($nota['valor_servicos'], 2, ',', '.') ?></td>
                                     <td>
                                         <a href="<?= base_url('importacao/editar/'.$nota['id']) ?>" class="btn btn-primary btn-sm">
                                             <i class="fas fa-edit"></i> Editar
@@ -95,6 +150,13 @@
                                         </a>
                                     </td>
                                 </tr>
+                                <?php if(isset($nota['status']) && $nota['status'] === 'revisar' && !empty($nota['observacoes'])): ?>
+                                <tr class="table-danger">
+                                    <td colspan="9" class="text-danger">
+                                        <i class="fas fa-exclamation-triangle"></i> <strong>Atenção:</strong> <?= $nota['observacoes'] ?>
+                                    </td>
+                                </tr>
+                                <?php endif; ?>
                                 <?php endforeach; ?>
                             </tbody>
                         </table>
@@ -104,6 +166,12 @@
                         <small class="text-muted">
                             <span class="badge bg-info"><i class="fas fa-user-edit"></i></span> Nota editada manualmente
                         </small>
+                        <?php if($notas_com_cpf_cnpj_duplicado): ?>
+                        <br>
+                        <small class="text-danger">
+                            <i class="fas fa-exclamation-triangle"></i> Linhas em vermelho indicam notas onde o CPF/CNPJ do tomador é igual ao do inquilino
+                        </small>
+                        <?php endif; ?>
                     </div>
                     <?php endif; ?>
                 </div>
@@ -119,14 +187,14 @@
                 </div>
                 <div class="card-body">
                     <ol>
-                        <li><strong>Verifique</strong> se todas as informações foram importadas corretamente.</li>
+                        <li><strong>Verifique</strong> se todas as informações necessárias para o DIMOB foram importadas corretamente.</li>
                         <li><strong>Edite</strong> as notas fiscais que precisam de correções ou complementos.</li>
-                        <li>Se alguma nota tiver o inquilino <strong>não identificado</strong>, você deve editá-la e selecionar o inquilino correto.</li>
+                        <li>Certifique-se de que cada nota possui o <strong>locatário (inquilino) identificado</strong> com CPF/CNPJ e o <strong>valor do aluguel</strong> corretamente informado.</li>
                         <li>Após confirmar que tudo está correto, <strong>clique em "Concluir Importação"</strong> para finalizar o processo.</li>
                     </ol>
                     
                     <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle"></i> <strong>Atenção:</strong> Após concluir a importação, as notas estarão disponíveis para geração do arquivo DIMOB.
+                        <i class="fas fa-exclamation-triangle"></i> <strong>Atenção:</strong> Todas as informações exibidas na tabela acima são essenciais para a geração correta do arquivo DIMOB.
                     </div>
                 </div>
             </div>
@@ -169,8 +237,14 @@ var portugueseLanguage = {
     }
 };
 
-// Inicializar DataTable com configurações completas
+// Inicializar DataTable e tooltips
 $(document).ready(function() {
+    // Inicializar tooltips do Bootstrap
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+
     // Verificar se a tabela existe
     if ($('table').length === 0) {
         console.error('Nenhuma tabela encontrada na página');

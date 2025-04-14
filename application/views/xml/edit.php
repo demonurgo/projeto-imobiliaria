@@ -12,6 +12,12 @@
                     </div>
                     <?php endif; ?>
                     
+                    <?php if(isset($nota['status']) && $nota['status'] === 'revisar'): ?>
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i> <strong>Atenção:</strong> O CPF/CNPJ do tomador (proprietário) é igual ao do inquilino (locatário). Isso pode indicar um erro de cadastro. Por favor, verifique os dados.
+                    </div>
+                    <?php endif; ?>
+                    
                     <?php if(validation_errors()): ?>
                     <div class="alert alert-warning">
                         <i class="fas fa-exclamation-triangle"></i> <?php echo validation_errors(); ?>
@@ -169,23 +175,39 @@
                                                 <?php foreach($imoveis as $imovel): ?>
                                                 <option value="<?= $imovel['id'] ?>"
                                                     data-endereco="<?= $imovel['endereco'] ?>"
+                                                    data-numero="<?= $imovel['numero'] ?>"
+                                                    data-complemento="<?= $imovel['complemento'] ?>"
                                                     data-valor="<?= $imovel['valor_aluguel'] ?>"
                                                     <?= ($imovel['id'] == $nota['imovel_id']) ? 'selected' : '' ?>>
-                                                    <?= $imovel['endereco'] ?> <?php if(!empty($imovel['valor_aluguel'])): ?>(Aluguel: R$ <?= number_format($imovel['valor_aluguel'], 2, ',', '.') ?>)<?php endif; ?>
+                                                    <?= $imovel['endereco'] ?> <?php if(!empty($imovel['numero'])): ?>, <?= $imovel['numero'] ?><?php endif; ?> <?php if(!empty($imovel['complemento'])): ?> - <?= $imovel['complemento'] ?><?php endif; ?> <?php if(!empty($imovel['valor_aluguel'])): ?>(Aluguel: R$ <?= number_format($imovel['valor_aluguel'], 2, ',', '.') ?>)<?php endif; ?>
                                                 </option>
                                                 <?php endforeach; ?>
                                             </select>
                                             <div class="form-text">Selecionar um imóvel preencherá automaticamente os campos abaixo.</div>
                                         </div>
                                         
-                                        <div class="col-md-8">
+                                        <div class="col-md-6">
                                             <div class="mb-3">
                                                 <label for="imovel_endereco" class="form-label">Endereço do Imóvel</label>
                                                 <input type="text" class="form-control" id="imovel_endereco" name="imovel_endereco" value="<?= isset($nota['imovel_endereco']) ? $nota['imovel_endereco'] : '' ?>">
                                             </div>
                                         </div>
                                         
+                                        <div class="col-md-2">
+                                            <div class="mb-3">
+                                                <label for="imovel_numero" class="form-label">Número</label>
+                                                <input type="text" class="form-control" id="imovel_numero" name="imovel_numero" value="<?= isset($nota['imovel_numero']) ? $nota['imovel_numero'] : '' ?>">
+                                            </div>
+                                        </div>
+                                        
                                         <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="imovel_complemento" class="form-label">Complemento</label>
+                                                <input type="text" class="form-control" id="imovel_complemento" name="imovel_complemento" value="<?= isset($nota['imovel_complemento']) ? $nota['imovel_complemento'] : '' ?>">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-12">
                                             <div class="mb-3">
                                                 <label for="valor_aluguel" class="form-label">Valor do Aluguel (R$)</label>
                                                 <input type="number" class="form-control" id="valor_aluguel" name="valor_aluguel" step="0.01" value="<?= isset($nota['valor_aluguel']) ? $nota['valor_aluguel'] : '' ?>">
@@ -265,6 +287,8 @@
         // Função para preencher automaticamente os campos do imóvel
         const imovelSelect = document.getElementById('imovel_id');
         const imovelEndereco = document.getElementById('imovel_endereco');
+        const imovelNumero = document.getElementById('imovel_numero');
+        const imovelComplemento = document.getElementById('imovel_complemento');
         const valorAluguel = document.getElementById('valor_aluguel');
         
         function updateImovelFields() {
@@ -274,6 +298,8 @@
                 // Preencher com os dados do imóvel selecionado
                 const selectedOption = imovelSelect.options[imovelSelect.selectedIndex];
                 imovelEndereco.value = selectedOption.getAttribute('data-endereco') || '';
+                imovelNumero.value = selectedOption.getAttribute('data-numero') || '';
+                imovelComplemento.value = selectedOption.getAttribute('data-complemento') || '';
                 valorAluguel.value = selectedOption.getAttribute('data-valor') || '';
             }
         }

@@ -58,6 +58,7 @@ class Imoveis extends CI_Controller {
                 'tomador_id' => $this->input->post('tomador_id') ? $this->input->post('tomador_id') : null, // Adicionar tomador_id
                 'valor_aluguel' => $this->input->post('valor_aluguel'),
                 'codigo_referencia' => $this->input->post('codigo_referencia'),
+                'tipo_imovel' => $this->input->post('tipo_imovel') ? $this->input->post('tipo_imovel') : 'urbano',
                 'observacoes' => $this->input->post('observacoes')
             );
             
@@ -115,6 +116,7 @@ class Imoveis extends CI_Controller {
                 'tomador_id' => $this->input->post('tomador_id') ? $this->input->post('tomador_id') : null, // Adicionar tomador_id
                 'valor_aluguel' => $this->input->post('valor_aluguel'),
                 'codigo_referencia' => $this->input->post('codigo_referencia'),
+                'tipo_imovel' => $this->input->post('tipo_imovel') ? $this->input->post('tipo_imovel') : 'urbano',
                 'observacoes' => $this->input->post('observacoes')
             );
             

@@ -8,7 +8,7 @@ class Imovel_model extends MY_Model {
     protected $fillable = array(
         'endereco', 'numero', 'complemento', 'bairro', 'cidade', 'uf', 'cep',
         'referencia', 'codigo_referencia', 'inquilino_id', 'tomador_id', 'valor_aluguel',
-        'observacoes'
+        'observacoes', 'tipo_imovel'
     );
     protected $relations = array(
         'notas' => 'imovel_id'

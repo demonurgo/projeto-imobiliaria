@@ -12,11 +12,17 @@ class Nota_model extends CI_Model {
         $this->db->select('notas.*, 
                           prestadores.razao_social as prestador_nome, 
                           tomadores.razao_social as tomador_nome,
-                          inquilinos.nome as inquilino_nome');
+                          tomadores.cpf_cnpj as tomador_cpf_cnpj,
+                          inquilinos.nome as inquilino_nome,
+                          inquilinos.cpf_cnpj as inquilino_cpf_cnpj,
+                          imoveis.endereco as imovel_endereco,
+                          imoveis.valor_aluguel as valor_aluguel,
+                          imoveis.tipo_imovel as tipo_imovel');
         $this->db->from('notas');
         $this->db->join('prestadores', 'prestadores.id = notas.prestador_id', 'left');
         $this->db->join('tomadores', 'tomadores.id = notas.tomador_id', 'left');
         $this->db->join('inquilinos', 'inquilinos.id = notas.inquilino_id', 'left');
+        $this->db->join('imoveis', 'imoveis.id = notas.imovel_id', 'left');
         $this->db->order_by('notas.data_emissao', 'DESC');
         
         return $this->db->get()->result_array();
@@ -26,11 +32,17 @@ class Nota_model extends CI_Model {
         $this->db->select('notas.*, 
                           prestadores.razao_social as prestador_nome, 
                           tomadores.razao_social as tomador_nome,
-                          inquilinos.nome as inquilino_nome');
+                          tomadores.cpf_cnpj as tomador_cpf_cnpj,
+                          inquilinos.nome as inquilino_nome,
+                          inquilinos.cpf_cnpj as inquilino_cpf_cnpj,
+                          imoveis.endereco as imovel_endereco,
+                          imoveis.valor_aluguel as valor_aluguel,
+                          imoveis.tipo_imovel as tipo_imovel');
         $this->db->from('notas');
         $this->db->join('prestadores', 'prestadores.id = notas.prestador_id', 'left');
         $this->db->join('tomadores', 'tomadores.id = notas.tomador_id', 'left');
         $this->db->join('inquilinos', 'inquilinos.id = notas.inquilino_id', 'left');
+        $this->db->join('imoveis', 'imoveis.id = notas.imovel_id', 'left');
         $this->db->where('notas.id', $id);
         
         return $this->db->get()->row_array();
@@ -40,11 +52,17 @@ class Nota_model extends CI_Model {
         $this->db->select('notas.*, 
                           prestadores.razao_social as prestador_nome, 
                           tomadores.razao_social as tomador_nome,
-                          inquilinos.nome as inquilino_nome');
+                          tomadores.cpf_cnpj as tomador_cpf_cnpj,
+                          inquilinos.nome as inquilino_nome,
+                          inquilinos.cpf_cnpj as inquilino_cpf_cnpj,
+                          imoveis.endereco as imovel_endereco,
+                          imoveis.valor_aluguel as valor_aluguel,
+                          imoveis.tipo_imovel as tipo_imovel');
         $this->db->from('notas');
         $this->db->join('prestadores', 'prestadores.id = notas.prestador_id', 'left');
         $this->db->join('tomadores', 'tomadores.id = notas.tomador_id', 'left');
         $this->db->join('inquilinos', 'inquilinos.id = notas.inquilino_id', 'left');
+        $this->db->join('imoveis', 'imoveis.id = notas.imovel_id', 'left');
         $this->db->where('notas.batch_id', $batch_id);
         $this->db->order_by('notas.numero', 'ASC');
         

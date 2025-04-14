@@ -62,10 +62,20 @@
                             </div>
                         </div>
                         
-                        <div class="col-md-6">
+                        <div class="col-md-3">
                             <div class="mb-3">
                                 <label for="valor_aluguel" class="form-label">Valor do Aluguel (R$)</label>
                                 <input type="number" class="form-control" id="valor_aluguel" name="valor_aluguel" value="<?= set_value('valor_aluguel', $imovel['valor_aluguel']) ?>" step="0.01" min="0">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="tipo_imovel" class="form-label">Tipo do Imóvel</label>
+                                <select class="form-select" id="tipo_imovel" name="tipo_imovel">
+                                    <option value="urbano" <?= set_select('tipo_imovel', 'urbano', (!isset($imovel['tipo_imovel']) || $imovel['tipo_imovel'] == 'urbano')) ?>>Urbano</option>
+                                    <option value="rural" <?= set_select('tipo_imovel', 'rural', (isset($imovel['tipo_imovel']) && $imovel['tipo_imovel'] == 'rural')) ?>>Rural</option>
+                                </select>
                             </div>
                         </div>
                     </div>

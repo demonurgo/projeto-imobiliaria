@@ -114,14 +114,15 @@
 				<table class="table table-striped table-hover table-sm" id="notasTable">
 					<thead class="table-light">
 						<tr>
-							<th>N°</th>
-							<th>Data</th>
-							<th>Prestador</th>
-							<th>Tomador</th>
-							<th>Valor</th>
-							<th>Inquilino</th>
-							<th>Status</th>
-							<th style="width: 130px;">Ações</th>
+							<th>N° Nota</th>
+							<th>Data Emissão</th>
+							<th>Locador (Proprietário)</th>
+							<th>Locatário (Inquilino)</th>
+							<th>CPF/CNPJ Locatário</th>
+							<th>Endereço Imóvel</th>
+							<th>Valor Aluguel</th>
+							<th>Valor Comissão</th>
+							<th style="width: 100px;">Ações</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -138,10 +139,8 @@
 											<span class="badge bg-info" title="Editado manualmente"><i class="fas fa-user-edit"></i></span>
 										<?php endif; ?>
 									</td>
-									<td><?= date('d/m/Y H:i', strtotime($nota['data_emissao'])) ?></td>
-									<td><?= $nota['prestador_nome'] ?></td>
+									<td><?= date('d/m/Y', strtotime($nota['data_emissao'])) ?></td>
 									<td><?= $nota['tomador_nome'] ?></td>
-									<td class="text-end"><?= number_format($nota['valor_servicos'], 2, ',', '.') ?></td>
 									<td>
 										<?php if ($nota['inquilino_id'] && isset($nota['inquilino_nome'])): ?>
 											<?= $nota['inquilino_nome'] ?>
@@ -150,22 +149,40 @@
 										<?php endif; ?>
 									</td>
 									<td>
-										<?php
-										switch ($nota['status']) {
-											case 'importado':
-												echo '<span class="badge bg-info">Importado</span>';
-												break;
-											case 'processado':
-												echo '<span class="badge bg-success">Processado</span>';
-												break;
-											case 'cancelado':
-												echo '<span class="badge bg-danger">Cancelado</span>';
-												break;
-											default:
-												echo '<span class="badge bg-secondary">Desconhecido</span>';
-										}
-										?>
+										<?php if ($nota['inquilino_id'] && isset($nota['inquilino_cpf_cnpj'])): ?>
+											<?php 
+											$cpf_cnpj_duplicado = false;
+											if (isset($nota['tomador_cpf_cnpj']) && isset($nota['inquilino_cpf_cnpj']) && 
+												!empty($nota['tomador_cpf_cnpj']) && !empty($nota['inquilino_cpf_cnpj']) && 
+												$nota['tomador_cpf_cnpj'] === $nota['inquilino_cpf_cnpj']) {
+												$cpf_cnpj_duplicado = true;
+											}
+											?>
+											<span <?= $cpf_cnpj_duplicado ? 'class="text-danger fw-bold"' : '' ?>>
+												<?= $nota['inquilino_cpf_cnpj'] ?>
+												<?php if($cpf_cnpj_duplicado): ?>
+													<i class="fas fa-exclamation-triangle text-danger" title="CPF/CNPJ do inquilino igual ao do proprietário!"></i>
+												<?php endif; ?>
+											</span>
+										<?php else: ?>
+											<span class="badge bg-warning text-dark">Não identificado</span>
+										<?php endif; ?>
 									</td>
+									<td>
+										<?php if ($nota['imovel_id'] && isset($nota['imovel_endereco'])): ?>
+											<?= $nota['imovel_endereco'] ?>
+										<?php else: ?>
+											<span class="badge bg-warning text-dark">Não identificado</span>
+										<?php endif; ?>
+									</td>
+									<td class="text-end">
+										<?php if ($nota['imovel_id'] && isset($nota['valor_aluguel'])): ?>
+											R$ <?= number_format($nota['valor_aluguel'], 2, ',', '.') ?>
+										<?php else: ?>
+											<span class="badge bg-warning text-dark">Não definido</span>
+										<?php endif; ?>
+									</td>
+									<td class="text-end">R$ <?= number_format($nota['valor_servicos'], 2, ',', '.') ?></td>
 									<td>
 										<div class="btn-group btn-group-sm" role="group">
 											<a href="<?= base_url('notas/view/' . $nota['id']) ?>" class="btn btn-info" title="Visualizar">
@@ -198,16 +215,25 @@
 						<h5 class="card-title mb-0"><i class="fas fa-info-circle"></i> Informações</h5>
 					</div>
 					<div class="card-body">
-						<h6>Legenda de Status:</h6>
+						<h6>Informações para DIMOB:</h6>
 						<div class="mb-3">
-						<span class="badge bg-info">Importado</span> - Nota fiscal importada do XML e aguardando processamento.
-						<br>
-						<span class="badge bg-success">Processado</span> - Nota fiscal importada e processada, pronta para DIMOB.
-						<br>
-						<span class="badge bg-danger">Cancelado</span> - Nota fiscal cancelada, não será incluída no DIMOB.
-						<br>
-						<span class="badge bg-info"><i class="fas fa-user-edit"></i></span> - Nota fiscal que foi editada manualmente.
+						<ul>
+						<li><strong>Locador (Proprietário):</strong> Pessoa/empresa proprietária do imóvel</li>
+						<li><strong>Locatário (Inquilino):</strong> Pessoa que aluga o imóvel</li>
+						<li><strong>Endereço do Imóvel:</strong> Localização do imóvel alugado</li>
+						<li><strong>Valor Aluguel:</strong> Valor mensal pago pelo inquilino</li>
+						<li><strong>Valor Comissão:</strong> Valor recebido pela imobiliária como taxa de administração</li>
+						</ul>
 						</div>
+					
+					<h6>Legenda de Indicações:</h6>
+					<div class="mb-3">
+					<span class="badge bg-warning text-dark">Não identificado</span> - Informação pendente que precisa ser complementada.
+					<br>
+					<span class="badge bg-info"><i class="fas fa-user-edit"></i></span> - Nota fiscal que foi editada manualmente.
+					<br>
+					<span class="text-danger fw-bold">CPF/CNPJ em vermelho <i class="fas fa-exclamation-triangle text-danger"></i></span> - O CPF/CNPJ do inquilino é igual ao do proprietário, o que pode indicar um erro de cadastro.
+					</div>
 
 						<div class="alert alert-warning">
 						 <i class="fas fa-exclamation-triangle"></i> <strong>Atenção:</strong>
