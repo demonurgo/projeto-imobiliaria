@@ -102,15 +102,18 @@
                         
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="tomador_id" class="form-label">Tomador de Serviço</label>
+                                <label for="tomador_id" class="form-label">Tomador de Serviço (Proprietário)</label>
                                 <select class="form-select" id="tomador_id" name="tomador_id" required>
                                     <option value="">Selecione o tomador</option>
                                     <?php foreach($tomadores as $tomador): ?>
-                                    <option value="<?= $tomador['id'] ?>" <?= ($tomador['id'] == $nota['tomador_id']) ? 'selected' : '' ?>>
+                                    <option value="<?= $tomador['id'] ?>" 
+                                        data-cpf-cnpj="<?= $tomador['cpf_cnpj'] ?>" 
+                                        <?= ($tomador['id'] == $nota['tomador_id']) ? 'selected' : '' ?>>
                                         <?= $tomador['razao_social'] ?> - <?= $tomador['cpf_cnpj'] ?>
                                     </option>
                                     <?php endforeach; ?>
                                 </select>
+                                <div class="form-text">O CPF/CNPJ do tomador é exibido na listagem como "CPF/CNPJ do Proprietário".</div>
                             </div>
                         </div>
                     </div>

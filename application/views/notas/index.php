@@ -117,6 +117,7 @@
 							<th>N° Nota</th>
 							<th>Data Emissão</th>
 							<th>Locador (Proprietário)</th>
+							<th>CPF/CNPJ Proprietário</th>
 							<th>Locatário (Inquilino)</th>
 							<th>CPF/CNPJ Locatário</th>
 							<th>Endereço Imóvel</th>
@@ -141,6 +142,7 @@
 									</td>
 									<td><?= date('d/m/Y', strtotime($nota['data_emissao'])) ?></td>
 									<td><?= $nota['tomador_nome'] ?></td>
+									<td><?= isset($nota['tomador_cpf_cnpj']) ? $nota['tomador_cpf_cnpj'] : '<span class="badge bg-warning text-dark">Não informado</span>' ?></td>
 									<td>
 										<?php if ($nota['inquilino_id'] && isset($nota['inquilino_nome'])): ?>
 											<?= $nota['inquilino_nome'] ?>
