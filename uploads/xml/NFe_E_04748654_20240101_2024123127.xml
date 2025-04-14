@@ -1,0 +1,152 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ConsultarNfseResposta xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.abrasf.org.br/ABRASF/arquivos/nfse.xsd">
+    <ListaNfse>
+        <CompNfse>
+            <Nfse>
+                <InfNfse>
+                    <Numero>8252</Numero>
+                    <CodigoVerificacao>UA41-YUND</CodigoVerificacao>
+                    <DataEmissao>2024-12-30T15:45:44</DataEmissao>
+                    <NaturezaOperacao>1</NaturezaOperacao>
+                    <OptanteSimplesNacional>2</OptanteSimplesNacional>
+                    <IncentivadorCultural>2</IncentivadorCultural>
+                    <Competencia>2024-12-30T00:00:00</Competencia>
+                    <Servico>
+                        <Valores>
+                            <ValorServicos>101</ValorServicos>
+                            <IssRetido>2</IssRetido>
+                            <ValorIss>2.02</ValorIss>
+                            <BaseCalculo>101</BaseCalculo>
+                            <Aliquota>0.02</Aliquota>
+                            <ValorLiquidoNfse>101</ValorLiquidoNfse>
+                        </Valores>
+                        <ItemListaServico>1712</ItemListaServico>
+                        <CodigoTributacaoMunicipio>6822600</CodigoTributacaoMunicipio>
+                        <Discriminacao>#0000000000001#JOSE DA SILVA A#900,36# IMOBILIÁRIA CAIMOVEIS - PE - SERVIÇO REFERENTE A TAXA DE ADMINISTRAÇÃO E CORRETAGEM DO IMÓVEL.
+
+RUA DA CAPELA N 89 A - JARDIM SÃO PAULO</Discriminacao>
+                        <CodigoMunicipio>2611606</CodigoMunicipio>
+                    </Servico>
+                    <ValorCredito>0.6</ValorCredito>
+                    <PrestadorServico>
+                        <IdentificacaoPrestador>
+                            <Cnpj>04393596000198</Cnpj>
+                            <InscricaoMunicipal>4748654</InscricaoMunicipal>
+                        </IdentificacaoPrestador>
+                        <RazaoSocial>CARLOS ANDRE C DOS SANTOS ME</RazaoSocial>
+                        <Endereco>
+                            <Endereco>Rua Dona Maria Lacerda 140, APTO 201 BLOCO E BL.E APTO.201</Endereco>
+                            <Numero>140</Numero>
+                            <Complemento>APTO 201 BLOCO E BL.E APTO.201</Complemento>
+                            <Bairro>Varzea</Bairro>
+                            <CodigoMunicipio>2611606</CodigoMunicipio>
+                            <Uf>PE</Uf>
+                            <Cep>50741010</Cep>
+                        </Endereco>
+                        <Contato>
+                            <Telefone>8130389152</Telefone>
+                            <Email>comercial@caimoveispe.com.br</Email>
+                        </Contato>
+                    </PrestadorServico>
+                    <TomadorServico>
+                        <IdentificacaoTomador>
+                            <CpfCnpj>
+                                <Cpf>09582495472</Cpf>
+                            </CpfCnpj>
+                        </IdentificacaoTomador>
+                        <RazaoSocial>JOSE EDNALDO TAVARES ANICETO</RazaoSocial>
+                        <Endereco>
+                            <Endereco>R João de Andrade 98, B</Endereco>
+                            <Numero>98</Numero>
+                            <Complemento>B</Complemento>
+                            <Bairro>Jardim São Paulo</Bairro>
+                            <CodigoMunicipio>2611606</CodigoMunicipio>
+                            <Uf>PE</Uf>
+                            <Cep>50790070</Cep>
+                        </Endereco>
+                        <Contato>
+                            <Email>ednaldotavares2000@gmail.com</Email>
+                        </Contato>
+                    </TomadorServico>
+                    <OrgaoGerador>
+                        <CodigoMunicipio>2611606</CodigoMunicipio>
+                        <Uf>PE</Uf>
+                    </OrgaoGerador>
+                </InfNfse>
+            </Nfse>
+        </CompNfse>
+        <CompNfse>
+            <Nfse>
+                <InfNfse>
+                    <Numero>8251</Numero>
+                    <CodigoVerificacao>SRE4-LFT9</CodigoVerificacao>
+                    <DataEmissao>2024-12-30T15:42:01</DataEmissao>
+                    <NaturezaOperacao>1</NaturezaOperacao>
+                    <OptanteSimplesNacional>2</OptanteSimplesNacional>
+                    <IncentivadorCultural>2</IncentivadorCultural>
+                    <Competencia>2024-12-30T00:00:00</Competencia>
+                    <Servico>
+                        <Valores>
+                            <ValorServicos>750.31</ValorServicos>
+                            <IssRetido>2</IssRetido>
+                            <ValorIss>15.01</ValorIss>
+                            <BaseCalculo>750.31</BaseCalculo>
+                            <Aliquota>0.02</Aliquota>
+                            <ValorLiquidoNfse>750.31</ValorLiquidoNfse>
+                        </Valores>
+                        <ItemListaServico>1712</ItemListaServico>
+                        <CodigoTributacaoMunicipio>6822600</CodigoTributacaoMunicipio>
+                        <Discriminacao>#0000000000002#MARIA DOS SANTOS#5000,00# IMOBILIÁRIA CAIMOVEIS - PE - SERVIÇO REFERENTE A TAXA DE ADMINISTRAÇÃO E CORRETAGEM DO IMÓVEL.
+
+ECOVILLE APTO 303 BL 2</Discriminacao>
+                        <CodigoMunicipio>2611606</CodigoMunicipio>
+                    </Servico>
+                    <ValorCredito>4.5</ValorCredito>
+                    <PrestadorServico>
+                        <IdentificacaoPrestador>
+                            <Cnpj>04393596000198</Cnpj>
+                            <InscricaoMunicipal>4748654</InscricaoMunicipal>
+                        </IdentificacaoPrestador>
+                        <RazaoSocial>CARLOS ANDRE C DOS SANTOS ME</RazaoSocial>
+                        <Endereco>
+                            <Endereco>Rua Dona Maria Lacerda 140, APTO 201 BLOCO E BL.E APTO.201</Endereco>
+                            <Numero>140</Numero>
+                            <Complemento>APTO 201 BLOCO E BL.E APTO.201</Complemento>
+                            <Bairro>Varzea</Bairro>
+                            <CodigoMunicipio>2611606</CodigoMunicipio>
+                            <Uf>PE</Uf>
+                            <Cep>50741010</Cep>
+                        </Endereco>
+                        <Contato>
+                            <Telefone>8130389152</Telefone>
+                            <Email>comercial@caimoveispe.com.br</Email>
+                        </Contato>
+                    </PrestadorServico>
+                    <TomadorServico>
+                        <IdentificacaoTomador>
+                            <CpfCnpj>
+                                <Cpf>32807856420</Cpf>
+                            </CpfCnpj>
+                        </IdentificacaoTomador>
+                        <RazaoSocial>RINALDO BARBOSA</RazaoSocial>
+                        <Endereco>
+                            <Endereco>R Cinqüenta e Três 145</Endereco>
+                            <Numero>145</Numero>
+                            <Bairro>Maranguape I</Bairro>
+                            <CodigoMunicipio>2610707</CodigoMunicipio>
+                            <Uf>PE</Uf>
+                            <Cep>53441190</Cep>
+                        </Endereco>
+                        <Contato>
+                            <Email>santosb.simone@gmail.com</Email>
+                        </Contato>
+                    </TomadorServico>
+                    <OrgaoGerador>
+                        <CodigoMunicipio>2611606</CodigoMunicipio>
+                        <Uf>PE</Uf>
+                    </OrgaoGerador>
+                </InfNfse>
+            </Nfse>
+        </CompNfse>
+    </ListaNfse>
+</ConsultarNfseResposta>
