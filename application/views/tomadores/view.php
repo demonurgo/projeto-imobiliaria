@@ -71,7 +71,7 @@
                         <div class="col-md-6">
                             <div class="card h-100">
                                 <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                                    <h6 class="card-title mb-0">Imóveis do Proprietário</h6>
+                                    <h6 class="card-title mb-0">Imóveis do Tomador</h6>
                                     <a href="<?= base_url('imoveis/create?tomador_id='.$tomador['id']) ?>" class="btn btn-light btn-sm">
                                         <i class="fas fa-plus"></i> Novo Imóvel
                                     </a>
@@ -95,7 +95,13 @@
                                                                 <?= $imovel['endereco'] ?>
                                                                 <?php if(!empty($imovel['numero'])): ?>, <?= $imovel['numero'] ?><?php endif; ?>
                                                             </td>
-                                                            <td><?= $imovel['inquilino_nome'] ?? 'Sem inquilino' ?></td>
+                                                            <td>
+                                                                <?php if(!empty($imovel['inquilino_nome'])): ?>
+                                                                    <span class="badge bg-success"><?= $imovel['inquilino_nome'] ?></span>
+                                                                <?php else: ?>
+                                                                    <span class="badge bg-secondary">Sem inquilino</span>
+                                                                <?php endif; ?>
+                                                            </td>
                                                             <td>
                                                                 <?= !empty($imovel['valor_aluguel']) ? 'R$ ' . number_format($imovel['valor_aluguel'], 2, ',', '.') : 'Não informado' ?>
                                                             </td>

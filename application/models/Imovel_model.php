@@ -54,13 +54,21 @@ class Imovel_model extends MY_Model {
     }
     
     public function get_by_inquilino($inquilino_id) {
-        $this->db->where('inquilino_id', $inquilino_id);
-        return $this->db->get($this->table)->result_array();
+        $this->db->select($this->table.'.*, tomadores.razao_social as tomador_nome');
+        $this->db->from($this->table);
+        $this->db->join('tomadores', 'tomadores.id = '.$this->table.'.tomador_id', 'left');
+        $this->db->where($this->table.'.inquilino_id', $inquilino_id);
+        $this->db->order_by($this->table.'.endereco', 'ASC');
+        return $this->db->get()->result_array();
     }
     
     public function get_by_tomador($tomador_id) {
-        $this->db->where('tomador_id', $tomador_id);
-        return $this->db->get($this->table)->result_array();
+        $this->db->select($this->table.'.*, inquilinos.nome as inquilino_nome');
+        $this->db->from($this->table);
+        $this->db->join('inquilinos', 'inquilinos.id = '.$this->table.'.inquilino_id', 'left');
+        $this->db->where($this->table.'.tomador_id', $tomador_id);
+        $this->db->order_by($this->table.'.endereco', 'ASC');
+        return $this->db->get()->result_array();
     }
     
     /**
