@@ -6,6 +6,7 @@ class Auth extends CI_Controller {
     public function __construct() {
         parent::__construct();
         $this->load->model('user_model');
+        $this->load->model('Log_model');
         $this->load->helper('url');
         $this->load->library('session');
     }
@@ -54,8 +55,28 @@ class Auth extends CI_Controller {
                 
                 $this->session->set_userdata($session_data);
                 
+                // Registrar log de login
+                $this->Log_model->add_log(
+                    'login',
+                    'auth',
+                    $user->id,
+                    'Login bem-sucedido no sistema',
+                    null,
+                    null
+                );
+                
                 redirect('dashboard');
             } else {
+                // Registrar tentativa de login falha
+                $this->Log_model->add_log(
+                    'login_failed',
+                    'auth',
+                    null,
+                    'Tentativa de login falhou: ' . $username,
+                    null,
+                    null
+                );
+                
                 $this->session->set_flashdata('error', 'Usuário ou senha inválidos');
                 $this->load->view('auth/login');
             }
@@ -63,6 +84,19 @@ class Auth extends CI_Controller {
     }
 
     public function logout() {
+        // Registrar log de logout se o usuário estiver logado
+        if ($this->session->userdata('user_id')) {
+            $this->Log_model->add_log(
+                'logout',
+                'auth',
+                $this->session->userdata('user_id'),
+                'Logout: ' . $this->session->userdata('username'),
+                null,
+                null
+            );
+        }
+        
+        // Limpar dados da sessão
         $this->session->unset_userdata('logged_in');
         $this->session->unset_userdata('user_id');
         $this->session->unset_userdata('username');

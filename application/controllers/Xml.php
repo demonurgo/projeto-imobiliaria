@@ -16,6 +16,7 @@ class Xml extends CI_Controller {
         $this->load->model('Tomador_model');
         $this->load->model('Inquilino_model');
         $this->load->model('Imovel_model');
+        $this->load->model('Log_model');
         
         // Carregar bibliotecas e helpers
         $this->load->helper(array('form', 'url', 'date'));
@@ -77,6 +78,25 @@ class Xml extends CI_Controller {
                 $result = $this->process_xml_file($file_path);
                 
                 if ($result['success']) {
+                    // Registrar log de importação
+                    $resumo = [
+                        'notas_importadas' => $result['notas_importadas'],
+                        'notas_ignoradas' => $result['notas_ignoradas'],
+                        'notas_total' => $result['notas_importadas'] + $result['notas_ignoradas']
+                    ];
+                    $this->Log_model->add_log(
+                        'import',
+                        'notas',
+                        null,
+                        'Importação de XML - ' . $result['message'],
+                        null,
+                        [
+                            'batch_id' => $result['batch_id'],
+                            'resumo' => $resumo,
+                            'arquivo' => $upload_data['file_name']
+                        ]
+                    );
+                    
                     $this->session->set_flashdata('success', 'XML importado com sucesso. ' . $result['message']);
                     if ($result['notas_importadas'] > 0) {
                         redirect('importacao/revisar/' . $result['batch_id']);
@@ -130,6 +150,27 @@ class Xml extends CI_Controller {
                 if (!empty($error_files)) {
                     $message .= " Erros em " . count($error_files) . " arquivo(s).";
                 }
+                
+                // Registrar log de importação múltipla
+                $resumo = [
+                    'arquivos_processados' => $count,
+                    'arquivos_com_sucesso' => $success_count,
+                    'arquivos_com_erro' => count($error_files),
+                    'erros' => $error_files
+                ];
+                $this->Log_model->add_log(
+                    'import',
+                    'notas',
+                    null,
+                    'Importação múltipla de XMLs - ' . $message,
+                    null,
+                    [
+                        'batch_id' => $batch_id,
+                        'resumo' => $resumo,
+                        'arquivo' => 'multiple_files'
+                    ]
+                );
+                
                 $this->session->set_flashdata('success', $message);
                 
                 // Verificar se há notas para revisar
@@ -175,6 +216,16 @@ class Xml extends CI_Controller {
         if (!$batch_id) {
             $batch_id = uniqid('batch_');
         }
+        
+        // Registrar início do processamento
+        $this->Log_model->add_log(
+            'import',
+            'notas',
+            null,
+            'Iniciando processamento do arquivo XML: ' . basename($file_path),
+            null,
+            ['batch_id' => $batch_id, 'arquivo' => basename($file_path), 'status' => 'inicio']
+        );
         
         // Verificar se o arquivo existe
         if (!file_exists($file_path)) {
@@ -325,6 +376,15 @@ class Xml extends CI_Controller {
             
             if ($nota_id) {
                 $notas_importadas++;
+                // Registrar log para cada nota importada
+                $this->Log_model->add_log(
+                    'import',
+                    'notas',
+                    $nota_id,
+                    'Nota fiscal importada: ' . $nota_data['numero'],
+                    null,
+                    ['batch_id' => $batch_id, 'prestador' => $prestador_data['razao_social'], 'tipo' => 'nota_individual']
+                );
             } else {
                 // A nota já existia no banco de dados
                 $notas_ignoradas++;
@@ -670,6 +730,15 @@ class Xml extends CI_Controller {
         $batch_id = $nota['batch_id'];
         
         if ($this->Nota_model->delete($id)) {
+            // Registrar log de exclusão
+            $this->Log_model->add_log(
+                'delete',
+                'notas',
+                $id,
+                'Nota fiscal excluída durante revisão de importação',
+                ['numero' => $nota['numero'], 'batch_id' => $batch_id],
+                null
+            );
             $this->session->set_flashdata('success', 'Nota fiscal excluída com sucesso.');
         } else {
             $this->session->set_flashdata('error', 'Erro ao excluir nota fiscal.');
@@ -681,10 +750,21 @@ class Xml extends CI_Controller {
     public function complete_import($batch_id) {
         // Atualizar status das notas para 'processado'
         $notas = $this->Nota_model->get_by_batch($batch_id);
+        $count = count($notas);
         
         foreach ($notas as $nota) {
             $this->Nota_model->update($nota['id'], array('status' => 'processado'));
         }
+        
+        // Registrar log de conclusão da importação
+        $this->Log_model->add_log(
+            'import',
+            'notas',
+            null,
+            'Importação finalizada - ' . $count . ' notas processadas',
+            null,
+            ['batch_id' => $batch_id, 'notas_processadas' => $count, 'status' => 'finalizado']
+        );
         
         $this->session->set_flashdata('success', 'Importação concluída com sucesso.');
         redirect('notas');

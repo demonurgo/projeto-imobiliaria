@@ -80,4 +80,10 @@ class User_model extends CI_Model
 		$this->db->order_by('id', 'ASC');
 		return $this->db->get($this->table)->result();
 	}
+	
+	public function get_all_array()
+	{
+		$this->db->order_by('id', 'ASC');
+		return $this->db->get($this->table)->result_array();
+	}
 }

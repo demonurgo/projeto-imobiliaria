@@ -11,6 +11,7 @@ class Dashboard extends CI_Controller {
         $this->load->model('Nota_model');
         $this->load->model('Inquilino_model');
         $this->load->model('Imovel_model');
+        $this->load->model('Log_model');
     }
 
     public function index() {
@@ -35,6 +36,9 @@ class Dashboard extends CI_Controller {
         $this->db->order_by('data_emissao', 'DESC');
         $this->db->limit(5);
         $data['notas_recentes'] = $this->db->get('notas')->result_array();
+        
+        // Buscar logs recentes de atividades
+        $data['atividades_recentes'] = $this->Log_model->get_recent_logs(5);
         
         $this->load->view('templates/header', $data);
         $this->load->view('dashboard/index', $data);

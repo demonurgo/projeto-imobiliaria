@@ -92,26 +92,111 @@
         <div class="col-md-6 mb-4">
             <div class="card">
                 <div class="card-header bg-secondary text-white">
-                    <h5 class="card-title mb-0"><i class="fas fa-clipboard-list"></i> Últimas Atividades</h5>
+                    <h5 class="card-title mb-0"><i class="fas fa-history"></i> Últimas Atividades</h5>
                 </div>
                 <div class="card-body">
-                    <?php if (empty($notas_recentes)): ?>
+                    <?php if (empty($atividades_recentes)): ?>
                         <div class="alert alert-secondary">
                             <i class="fas fa-info-circle"></i> Nenhuma atividade recente para exibir.
                         </div>
                     <?php else: ?>
-                        <ul class="list-group">
-                            <?php foreach ($notas_recentes as $nota): ?>
-                                <li class="list-group-item">
+                        <div id="ultimas-atividades">
+                            <?php foreach ($atividades_recentes as $log): ?>
+                                <div class="activity-item border-bottom pb-2 mb-2">
                                     <div class="d-flex w-100 justify-content-between">
-                                        <h6 class="mb-1">Nota #<?= $nota['numero'] ?></h6>
-                                        <small><?= date('d/m/Y', strtotime($nota['data_emissao'])) ?></small>
+                                        <small class="text-muted"><?= date('d/m/Y H:i', strtotime($log['created_at'])) ?></small>
+                                        <?php
+                                        // Badge da ação
+                                        $badge_class = 'bg-secondary';
+                                        switch($log['action']) {
+                                            case 'create': $badge_class = 'bg-success'; break;
+                                            case 'update': $badge_class = 'bg-primary'; break;
+                                            case 'delete': $badge_class = 'bg-danger'; break;
+                                            case 'login': $badge_class = 'bg-info'; break;
+                                            case 'logout': $badge_class = 'bg-warning text-dark'; break;
+                                            case 'import': $badge_class = 'bg-info'; break;
+                                        }
+                                        ?>
+                                        <span class="badge <?= $badge_class ?>">
+                                            <?php
+                                            switch($log['action']) {
+                                                case 'create': echo 'Criar'; break;
+                                                case 'update': echo 'Atualizar'; break;
+                                                case 'delete': echo 'Excluir'; break;
+                                                case 'login': echo 'Login'; break;
+                                                case 'logout': echo 'Logout'; break;
+                                                case 'import': echo 'Importar'; break;
+                                                default: echo ucfirst($log['action']);
+                                            }
+                                            ?>
+                                        </span>
                                     </div>
-                                    <p class="mb-1">Valor: R$ <?= number_format($nota['valor_servicos'], 2, ',', '.') ?></p>
-                                    <small>Status: <?= ucfirst($nota['status']) ?></small>
-                                </li>
+                                    <p class="mb-1">
+                                        <strong><?= $log['user_name'] ?? 'Sistema' ?></strong>
+                                        <?php
+                                        // Texto da ação
+                                        switch($log['action']) {
+                                            case 'create':
+                                                echo 'criou um novo registro em ';
+                                                break;
+                                            case 'update':
+                                                echo 'atualizou um registro em ';
+                                                break;
+                                            case 'delete':
+                                                echo 'excluiu um registro em ';
+                                                break;
+                                            case 'login':
+                                                echo 'realizou login no sistema';
+                                                break;
+                                            case 'logout':
+                                                echo 'saiu do sistema';
+                                                break;
+                                            case 'import':
+                                                echo 'importou dados para ';
+                                                break;
+                                            default:
+                                                echo $log['action'] . ' em ';
+                                        }
+                                        
+                                        // Texto do módulo
+                                        if ($log['action'] != 'login' && $log['action'] != 'logout') {
+                                            switch($log['module']) {
+                                                case 'prestadores':
+                                                    echo 'Prestadores';
+                                                    break;
+                                                case 'tomadores':
+                                                    echo 'Tomadores';
+                                                    break;
+                                                case 'inquilinos':
+                                                    echo 'Inquilinos';
+                                                    break;
+                                                case 'imoveis':
+                                                    echo 'Imóveis';
+                                                    break;
+                                                case 'notas':
+                                                    echo 'Notas Fiscais';
+                                                    break;
+                                                case 'users':
+                                                    echo 'Usuários';
+                                                    break;
+                                                default:
+                                                    echo $log['module'];
+                                            }
+                                        }
+                                        ?>
+                                    </p>
+                                    <?php if (!empty($log['description'])): ?>
+                                        <small class="text-muted d-block text-truncate"><?= $log['description'] ?></small>
+                                    <?php endif; ?>
+                                </div>
                             <?php endforeach; ?>
-                        </ul>
+                            
+                            <div class="text-center mt-3">
+                                <a href="<?= base_url('logs') ?>" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-list"></i> Ver Todos os Logs
+                                </a>
+                            </div>
+                        </div>
                     <?php endif; ?>
                 </div>
             </div>

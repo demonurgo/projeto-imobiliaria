@@ -82,13 +82,36 @@ footer {
     font-size: 0.85em;
 }
 
-/* For mobile devices */
-@media (max-width: 768px) {
-    .container {
-        max-width: 100%;
-    }
-    
-    .card-title {
-        font-size: 1.2rem;
-    }
+/* Log Activity page */
+.activity-item {
+    border-bottom: 1px solid #eee;
+    padding: 10px 0;
+    margin-bottom: 10px;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.text-truncate {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Select2 customization */
+.select2-container--bootstrap-5 .select2-selection {
+    height: calc(1.5em + 0.75rem + 2px);
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+}
+
+.select2-container--bootstrap-5.select2-container--focus .select2-selection {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }

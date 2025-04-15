@@ -112,6 +112,28 @@ class Nota_model extends CI_Model {
         return $this->db->get()->result_array();
     }
     
+    /**
+     * Busca notas de um determinado lote incluindo informações do tomador
+     * 
+     * @param string $batch_id ID do lote de notas
+     * @param int|null $limit Limite de registros (null para sem limite)
+     * @return array Registros encontrados
+     */
+    public function get_by_batch_with_tomador($batch_id, $limit = null) {
+        $this->db->select('notas.id, notas.numero, notas.data_emissao, notas.valor_servicos, notas.status, 
+                          tomadores.razao_social as tomador_nome');
+        $this->db->from('notas');
+        $this->db->join('tomadores', 'tomadores.id = notas.tomador_id', 'left');
+        $this->db->where('notas.batch_id', $batch_id);
+        $this->db->order_by('notas.numero', 'ASC');
+        
+        if ($limit !== null) {
+            $this->db->limit($limit);
+        }
+        
+        return $this->db->get()->result_array();
+    }
+    
     public function save($data) {
         // Verificar se a nota já existe pelo número e código de verificação (identificadores únicos da nota)
         $this->db->where('numero', $data['numero']);
