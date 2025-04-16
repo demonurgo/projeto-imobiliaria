@@ -34,24 +34,41 @@ class Prestadores extends CI_Controller {
         $data['active'] = 'prestadores';
         
         // Configurar regras de validação
-        $this->form_validation->set_rules('cnpj', 'CNPJ', 'required|callback_validate_cnpj');
         $this->form_validation->set_rules('razao_social', 'Razão Social', 'required');
         $this->form_validation->set_rules('email', 'Email', 'valid_email');
+        
+        // Verificar se ao menos um dos documentos (CPF ou CNPJ) foi fornecido
+        if ($this->input->post('cnpj')) {
+            $this->form_validation->set_rules('cnpj', 'CNPJ', 'callback_validate_cnpj');
+        }
+        
+        if ($this->input->post('cpf')) {
+            $this->form_validation->set_rules('cpf', 'CPF', 'callback_validate_cpf');
+        }
         
         if ($this->form_validation->run() === FALSE) {
             $this->load->view('templates/header', $data);
             $this->load->view('prestadores/create', $data);
             $this->load->view('templates/footer');
         } else {
+            // Verificar se ao menos um documento foi fornecido
+            if (empty($this->input->post('cnpj')) && empty($this->input->post('cpf'))) {
+                $this->session->set_flashdata('error', 'É necessário informar ao menos um documento (CPF ou CNPJ).');
+                $this->load->view('templates/header', $data);
+                $this->load->view('prestadores/create', $data);
+                $this->load->view('templates/footer');
+                return;
+            }
+            
             // Preparar os dados do prestador
             $prestador_data = array(
-                'cnpj' => preg_replace('/[^0-9]/', '', $this->input->post('cnpj')),
                 'inscricao_municipal' => $this->input->post('inscricao_municipal'),
                 'razao_social' => $this->input->post('razao_social'),
                 'endereco' => $this->input->post('endereco'),
                 'numero' => $this->input->post('numero'),
                 'complemento' => $this->input->post('complemento'),
                 'bairro' => $this->input->post('bairro'),
+                'cidade' => $this->input->post('cidade'),
                 'codigo_municipio' => $this->input->post('codigo_municipio'),
                 'uf' => $this->input->post('uf'),
                 'cep' => preg_replace('/[^0-9]/', '', $this->input->post('cep')),
@@ -59,6 +76,15 @@ class Prestadores extends CI_Controller {
                 'email' => $this->input->post('email'),
                 'created_at' => date('Y-m-d H:i:s')
             );
+            
+            // Adicionar CPF e CNPJ se fornecidos
+            if (!empty($this->input->post('cpf'))) {
+                $prestador_data['cpf'] = preg_replace('/[^0-9]/', '', $this->input->post('cpf'));
+            }
+            
+            if (!empty($this->input->post('cnpj'))) {
+                $prestador_data['cnpj'] = preg_replace('/[^0-9]/', '', $this->input->post('cnpj'));
+            }
             
             // Salvar prestador
             $prestador_id = $this->Prestador_model->save($prestador_data);
@@ -87,24 +113,41 @@ class Prestadores extends CI_Controller {
         $data['active'] = 'prestadores';
         
         // Configurar regras de validação
-        $this->form_validation->set_rules('cnpj', 'CNPJ', 'required|callback_validate_cnpj');
         $this->form_validation->set_rules('razao_social', 'Razão Social', 'required');
         $this->form_validation->set_rules('email', 'Email', 'valid_email');
+        
+        // Verificar se ao menos um dos documentos (CPF ou CNPJ) foi fornecido
+        if ($this->input->post('cnpj')) {
+            $this->form_validation->set_rules('cnpj', 'CNPJ', 'callback_validate_cnpj');
+        }
+        
+        if ($this->input->post('cpf')) {
+            $this->form_validation->set_rules('cpf', 'CPF', 'callback_validate_cpf');
+        }
         
         if ($this->form_validation->run() === FALSE) {
             $this->load->view('templates/header', $data);
             $this->load->view('prestadores/edit', $data);
             $this->load->view('templates/footer');
         } else {
+            // Verificar se ao menos um documento foi fornecido
+            if (empty($this->input->post('cnpj')) && empty($this->input->post('cpf'))) {
+                $this->session->set_flashdata('error', 'É necessário informar ao menos um documento (CPF ou CNPJ).');
+                $this->load->view('templates/header', $data);
+                $this->load->view('prestadores/edit', $data);
+                $this->load->view('templates/footer');
+                return;
+            }
+            
             // Preparar os dados do prestador
             $prestador_data = array(
-                'cnpj' => preg_replace('/[^0-9]/', '', $this->input->post('cnpj')),
                 'inscricao_municipal' => $this->input->post('inscricao_municipal'),
                 'razao_social' => $this->input->post('razao_social'),
                 'endereco' => $this->input->post('endereco'),
                 'numero' => $this->input->post('numero'),
                 'complemento' => $this->input->post('complemento'),
                 'bairro' => $this->input->post('bairro'),
+                'cidade' => $this->input->post('cidade'),
                 'codigo_municipio' => $this->input->post('codigo_municipio'),
                 'uf' => $this->input->post('uf'),
                 'cep' => preg_replace('/[^0-9]/', '', $this->input->post('cep')),
@@ -112,6 +155,19 @@ class Prestadores extends CI_Controller {
                 'email' => $this->input->post('email'),
                 'updated_at' => date('Y-m-d H:i:s')
             );
+            
+            // Adicionar CPF e CNPJ se fornecidos
+            if (!empty($this->input->post('cpf'))) {
+                $prestador_data['cpf'] = preg_replace('/[^0-9]/', '', $this->input->post('cpf'));
+            } else {
+                $prestador_data['cpf'] = null; // Limpar o campo se não foi fornecido
+            }
+            
+            if (!empty($this->input->post('cnpj'))) {
+                $prestador_data['cnpj'] = preg_replace('/[^0-9]/', '', $this->input->post('cnpj'));
+            } else {
+                $prestador_data['cnpj'] = null; // Limpar o campo se não foi fornecido
+            }
             
             // Atualizar prestador
             if ($this->Prestador_model->update($id, $prestador_data)) {
@@ -201,6 +257,38 @@ class Prestadores extends CI_Controller {
             $d = ((10 * $d) % 11) % 10;
             if ($cnpj[$c] != $d) {
                 $this->form_validation->set_message('validate_cnpj', 'CNPJ inválido.');
+                return FALSE;
+            }
+        }
+        
+        return TRUE;
+    }
+
+    // Função para validar CPF
+    public function validate_cpf($cpf) {
+        $cpf = preg_replace('/[^0-9]/', '', $cpf);
+        
+        // Verificar se o CPF tem 11 dígitos
+        if (strlen($cpf) != 11) {
+            $this->form_validation->set_message('validate_cpf', 'O CPF deve conter 11 dígitos.');
+            return FALSE;
+        }
+        
+        // Verificar se todos os dígitos são iguais (ex: 11111111111)
+        if (preg_match('/(\d)\1{10}/', $cpf)) {
+            $this->form_validation->set_message('validate_cpf', 'CPF inválido.');
+            return FALSE;
+        }
+        
+        // Cálculo de validação de CPF
+        for ($t = 9; $t < 11; $t++) {
+            $d = 0;
+            for ($c = 0; $c < $t; $c++) {
+                $d += $cpf[$c] * (($t + 1) - $c);
+            }
+            $d = ((10 * $d) % 11) % 10;
+            if ($cpf[$c] != $d) {
+                $this->form_validation->set_message('validate_cpf', 'CPF inválido.');
                 return FALSE;
             }
         }

@@ -25,31 +25,50 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="cnpj" class="form-label">CNPJ *</label>
+                                <label for="cpf" class="form-label">CPF</label>
                                 <?php 
-                                $cnpj = $prestador['cnpj'];
+                                $cpf = isset($prestador['cpf']) ? $prestador['cpf'] : '';
+                                if(strlen($cpf) === 11) {
+                                    $cpf_formatado = substr($cpf, 0, 3).'.'.substr($cpf, 3, 3).'.'.substr($cpf, 6, 3).'-'.substr($cpf, 9, 2);
+                                } else {
+                                    $cpf_formatado = $cpf;
+                                }
+                                ?>
+                                <input type="text" class="form-control" id="cpf" name="cpf" value="<?= set_value('cpf', $cpf_formatado) ?>">
+                                <div class="form-text">CPF do prestador (se pessoa física)</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="cnpj" class="form-label">CNPJ</label>
+                                <?php 
+                                $cnpj = isset($prestador['cnpj']) ? $prestador['cnpj'] : '';
                                 if(strlen($cnpj) === 14) {
                                     $cnpj_formatado = substr($cnpj, 0, 2).'.'.substr($cnpj, 2, 3).'.'.substr($cnpj, 5, 3).'/'.substr($cnpj, 8, 4).'-'.substr($cnpj, 12, 2);
                                 } else {
                                     $cnpj_formatado = $cnpj;
                                 }
                                 ?>
-                                <input type="text" class="form-control" id="cnpj" name="cnpj" value="<?= set_value('cnpj', $cnpj_formatado) ?>" required>
-                                <div class="invalid-feedback">CNPJ é obrigatório</div>
+                                <input type="text" class="form-control" id="cnpj" name="cnpj" value="<?= set_value('cnpj', $cnpj_formatado) ?>">
+                                <div class="form-text">CNPJ do prestador (se pessoa jurídica)</div>
                             </div>
                         </div>
+                    </div>
+                    
+                    <div class="row mb-3">
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="inscricao_municipal" class="form-label">Inscrição Municipal</label>
                                 <input type="text" class="form-control" id="inscricao_municipal" name="inscricao_municipal" value="<?= set_value('inscricao_municipal', $prestador['inscricao_municipal']) ?>">
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="razao_social" class="form-label">Razão Social *</label>
-                        <input type="text" class="form-control" id="razao_social" name="razao_social" value="<?= set_value('razao_social', $prestador['razao_social']) ?>" required>
-                        <div class="invalid-feedback">Razão Social é obrigatória</div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="razao_social" class="form-label">Razão Social / Nome *</label>
+                                <input type="text" class="form-control" id="razao_social" name="razao_social" value="<?= set_value('razao_social', $prestador['razao_social']) ?>" required>
+                                <div class="invalid-feedback">Razão Social é obrigatória</div>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="row mb-3">
@@ -102,20 +121,13 @@
                     </div>
                     
                     <div class="row mb-3">
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="cep" class="form-label">CEP</label>
-                                <?php 
-                                $cep = $prestador['cep'];
-                                if(strlen($cep) === 8) {
-                                    $cep_formatado = substr($cep, 0, 5).'-'.substr($cep, 5, 3);
-                                } else {
-                                    $cep_formatado = $cep;
-                                }
-                                ?>
-                                <input type="text" class="form-control" id="cep" name="cep" value="<?= set_value('cep', $cep_formatado) ?>">
+                                <label for="cidade" class="form-label">Cidade</label>
+                                <input type="text" class="form-control" id="cidade" name="cidade" value="<?= set_value('cidade', isset($prestador['cidade']) ? $prestador['cidade'] : '') ?>">
                             </div>
                         </div>
+                        
                         <div class="col-md-2">
                             <div class="mb-3">
                                 <label for="uf" class="form-label">UF</label>
@@ -133,7 +145,25 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="cep" class="form-label">CEP</label>
+                                <?php 
+                                $cep = $prestador['cep'];
+                                if(strlen($cep) === 8) {
+                                    $cep_formatado = substr($cep, 0, 5).'-'.substr($cep, 5, 3);
+                                } else {
+                                    $cep_formatado = $cep;
+                                }
+                                ?>
+                                <input type="text" class="form-control" id="cep" name="cep" value="<?= set_value('cep', $cep_formatado) ?>">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
                             <div class="mb-3">
                                 <label for="codigo_municipio" class="form-label">Código do Município (IBGE)</label>
                                 <input type="text" class="form-control" id="codigo_municipio" name="codigo_municipio" value="<?= set_value('codigo_municipio', $prestador['codigo_municipio']) ?>">
@@ -161,6 +191,7 @@
 <script>
 $(document).ready(function() {
     // Inicializar máscaras
+    $('#cpf').mask('000.000.000-00');
     $('#cnpj').mask('00.000.000/0000-00');
     $('#telefone').mask('(00) 00000-0000');
     $('#cep').mask('00000-000');
@@ -173,8 +204,8 @@ $(document).ready(function() {
                 if (!("erro" in dados)) {
                     $("#endereco").val(dados.logradouro);
                     $("#bairro").val(dados.bairro);
-                    $("#uf").val(dados.uf);
                     $("#cidade").val(dados.localidade);
+                    $("#uf").val(dados.uf);
                     
                     // Buscar código do município pelo nome da cidade e UF
                     if (dados.ibge) {
@@ -191,6 +222,16 @@ $(document).ready(function() {
     var forms = document.querySelectorAll('.needs-validation');
     Array.prototype.slice.call(forms).forEach(function(form) {
         form.addEventListener('submit', function(event) {
+            // Verificar se ao menos um documento foi preenchido
+            var cpf = $('#cpf').val().replace(/\D/g, '');
+            var cnpj = $('#cnpj').val().replace(/\D/g, '');
+            
+            if (cpf === '' && cnpj === '') {
+                alert('É necessário informar ao menos um documento (CPF ou CNPJ)');
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
             if (!form.checkValidity()) {
                 event.preventDefault();
                 event.stopPropagation();

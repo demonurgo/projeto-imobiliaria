@@ -1,5 +1,5 @@
 <style>
-	    .table-spacing tbody tr {
+    .table-spacing tbody tr {
         height: 60px;
     }
     .table-spacing td {
@@ -14,8 +14,8 @@
 </style>
 <div class="container">
 
-	<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/jquery-mask-plugin@1.14.16/dist/jquery.mask.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-mask-plugin@1.14.16/dist/jquery.mask.min.js"></script>
     <div class="row mb-4">
         <div class="col-md-12">
             <div class="card">
@@ -45,9 +45,9 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>Razão Social</th>
+                                    <th>CPF</th>
                                     <th>CNPJ</th>
-                                    <th>Inscrição Municipal</th>
-                                    <th>Email</th>
+                                    <th>Cidade/UF</th>
                                     <th>Telefone</th>
                                     <th>Ações</th>
                                 </tr>
@@ -63,17 +63,45 @@
                                     <td><?= $prestador['razao_social'] ?></td>
                                     <td>
                                         <?php 
-                                        $cnpj = $prestador['cnpj'];
-                                        if(strlen($cnpj) === 14) {
-                                            echo mask($cnpj, '##.###.###/####-##');
+                                        if(!empty($prestador['cpf'])) {
+                                            $cpf = $prestador['cpf'];
+                                            if(strlen($cpf) === 11) {
+                                                echo mask($cpf, '###.###.###-##');
+                                            } else {
+                                                echo $cpf;
+                                            }
                                         } else {
-                                            echo $cnpj;
+                                            echo '-';
                                         }
                                         ?>
                                     </td>
-                                    <td><?= $prestador['inscricao_municipal'] ?? '-' ?></td>
-                                    <td><?= $prestador['email'] ?? '-' ?></td>
-                                    <td><?= $prestador['telefone'] ?? '-' ?></td>
+                                    <td>
+                                        <?php 
+                                        if(!empty($prestador['cnpj'])) {
+                                            $cnpj = $prestador['cnpj'];
+                                            if(strlen($cnpj) === 14) {
+                                                echo mask($cnpj, '##.###.###/####-##');
+                                            } else {
+                                                echo $cnpj;
+                                            }
+                                        } else {
+                                            echo '-';
+                                        }
+                                        ?>
+                                    </td>
+                                    <td>
+                                        <?php
+                                        $cidade_uf = '';
+                                        if (!empty($prestador['cidade'])) {
+                                            $cidade_uf .= $prestador['cidade'];
+                                        }
+                                        if (!empty($prestador['uf'])) {
+                                            $cidade_uf .= !empty($cidade_uf) ? '/'.$prestador['uf'] : $prestador['uf'];
+                                        }
+                                        echo !empty($cidade_uf) ? $cidade_uf : '-';
+                                        ?>
+                                    </td>
+                                    <td><?= !empty($prestador['telefone']) ? $prestador['telefone'] : '-' ?></td>
                                     <td>
                                         <div class="btn-group btn-group-sm" role="group">
                                             <a href="<?= base_url('prestadores/view/'.$prestador['id']) ?>" class="btn btn-info" title="Visualizar">
@@ -101,7 +129,7 @@
 </div>
 
 <?php
-// Função para formatar CNPJ
+// Função para formatar CNPJ/CPF
 function mask($val, $mask) {
     $maskared = '';
     $k = 0;
@@ -169,7 +197,7 @@ $(document).ready(function() {
             ...portugueseLanguage, // Spread operator para adicionar todas as traduções
             "searchPlaceholder": "Filtrar"
         },
-        "order": [[1, "desc"]], // Ordenar por data
+        "order": [[0, "asc"]], // Ordenar por razão social
         "responsive": true,
         "pageLength": 25,
         // Configurações adicionais para melhorar a experiência

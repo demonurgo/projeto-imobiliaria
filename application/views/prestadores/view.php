@@ -37,6 +37,21 @@
                                 <div class="card-body">
                                     <h3 class="mb-3"><?= $prestador['razao_social'] ?></h3>
                                     
+                                    <?php if(!empty($prestador['cpf'])): ?>
+                                    <p>
+                                        <strong>CPF:</strong>
+                                        <?php 
+                                        $cpf = $prestador['cpf'];
+                                        if(strlen($cpf) === 11) {
+                                            echo substr($cpf, 0, 3).'.'.substr($cpf, 3, 3).'.'.substr($cpf, 6, 3).'-'.substr($cpf, 9, 2);
+                                        } else {
+                                            echo $cpf;
+                                        }
+                                        ?>
+                                    </p>
+                                    <?php endif; ?>
+                                    
+                                    <?php if(!empty($prestador['cnpj'])): ?>
                                     <p>
                                         <strong>CNPJ:</strong>
                                         <?php 
@@ -48,6 +63,7 @@
                                         }
                                         ?>
                                     </p>
+                                    <?php endif; ?>
                                     
                                     <p><strong>Inscrição Municipal:</strong> <?= $prestador['inscricao_municipal'] ?? 'Não informado' ?></p>
                                     <p><strong>Email:</strong> <?= $prestador['email'] ?? 'Não informado' ?></p>
@@ -69,14 +85,7 @@
                                         <br>
                                         <?= !empty($prestador['bairro']) ? $prestador['bairro'] : '' ?>
                                         <br>
-                                        <?php 
-                                        $cidade = '';
-                                        if(!empty($prestador['codigo_municipio'])) {
-                                            // Aqui você poderia ter uma função para converter o código em nome da cidade
-                                            $cidade = 'Código IBGE: ' . $prestador['codigo_municipio'];
-                                        }
-                                        echo $cidade;
-                                        ?>
+                                        <?= !empty($prestador['cidade']) ? $prestador['cidade'] : '' ?>
                                         <?= !empty($prestador['uf']) ? ' - '.$prestador['uf'] : '' ?>
                                         <br>
                                         <?php 
@@ -87,6 +96,12 @@
                                             } else {
                                                 echo 'CEP: ' . $cep;
                                             }
+                                        }
+                                        ?>
+                                        <br>
+                                        <?php 
+                                        if(!empty($prestador['codigo_municipio'])) {
+                                            echo 'Código IBGE: ' . $prestador['codigo_municipio'];
                                         }
                                         ?>
                                     </p>

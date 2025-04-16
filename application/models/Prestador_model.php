@@ -23,15 +23,32 @@ class Prestador_model extends CI_Model {
         return $this->db->get('prestadores')->row_array();
     }
     
+    public function get_by_cpf($cpf) {
+        $this->db->where('cpf', $cpf);
+        return $this->db->get('prestadores')->row_array();
+    }
+    
     public function save($data) {
         // Remove caracteres não numéricos do CNPJ
         if (isset($data['cnpj'])) {
             $data['cnpj'] = preg_replace('/[^0-9]/', '', $data['cnpj']);
         }
         
-        // Verificar se o prestador já existe
-        $this->db->where('cnpj', $data['cnpj']);
-        $query = $this->db->get('prestadores');
+        // Remove caracteres não numéricos do CPF
+        if (isset($data['cpf'])) {
+            $data['cpf'] = preg_replace('/[^0-9]/', '', $data['cpf']);
+        }
+        
+        // Verificar se o prestador já existe por CNPJ ou CPF
+        $query = $this->db->get('prestadores', 0); // Inicializa uma consulta vazia
+        
+        if (!empty($data['cnpj'])) {
+            $this->db->where('cnpj', $data['cnpj']);
+            $query = $this->db->get('prestadores');
+        } elseif (!empty($data['cpf'])) {
+            $this->db->where('cpf', $data['cpf']);
+            $query = $this->db->get('prestadores');
+        }
         
         if ($query->num_rows() > 0) {
             // Atualizar prestador existente
@@ -50,6 +67,11 @@ class Prestador_model extends CI_Model {
         // Remove caracteres não numéricos do CNPJ
         if (isset($data['cnpj'])) {
             $data['cnpj'] = preg_replace('/[^0-9]/', '', $data['cnpj']);
+        }
+        
+        // Remove caracteres não numéricos do CPF
+        if (isset($data['cpf'])) {
+            $data['cpf'] = preg_replace('/[^0-9]/', '', $data['cpf']);
         }
         
         $this->db->where('id', $id);
