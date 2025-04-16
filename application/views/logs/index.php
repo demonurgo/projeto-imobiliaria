@@ -68,10 +68,9 @@
                                             <label for="user_id">Usuário</label>
                                             <select name="user_id" id="user_id" class="form-select select2">
                                                 <option value="">Todos</option>
-                                                <?php foreach($users as $user_id => $user_name): ?>
-                                                <option value="<?= $user_id ?>" <?= (isset($filters['user_id']) && $filters['user_id'] == $user_id) ? 'selected' : '' ?>>
-                                                    <?= $user_name ?>
-                                                </option>
+                                                <?php foreach($users as $user_id => $user): ?>
+                                                <option value="<?= is_array($user) ? $user['id'] : $user_id ?>" <?= (isset($filters['user_id']) && $filters['user_id'] == (is_array($user) ? $user['id'] : $user_id)) ? 'selected' : '' ?>>
+                                                    <?= is_array($user) ? $user['name'] : $user ?>
                                                 <?php endforeach; ?>
                                             </select>
                                         </div>
@@ -168,7 +167,17 @@
                                             <td><?= date('d/m/Y H:i:s', strtotime($log->created_at)) ?></td>
                                             <td>
                                                 <?php if ($log->user_id): ?>
-                                                    <?= isset($users[$log->user_id]) ? $users[$log->user_id] : 'Usuário #'.$log->user_id ?>
+                                                    <?php 
+                                                    $found_user = false;
+                                                    foreach($users as $user) {
+                                                        if($user['id'] == $log->user_id) {
+                                                            echo $user['name'];
+                                                            $found_user = true;
+                                                            break;
+                                                        }
+                                                    }
+                                                    if(!$found_user) echo 'Usuário #'.$log->user_id;
+                                                    ?>
                                                 <?php else: ?>
                                                     Sistema
                                                 <?php endif; ?>
@@ -301,7 +310,7 @@
 <div class="modal fade" id="cleanLogsModal" tabindex="-1" aria-labelledby="cleanLogsModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="<?= base_url('logs/clean') ?>" method="post">
+            <form action="<?= site_url('logs/clean') ?>" method="post">
                 <div class="modal-header">
                     <h5 class="modal-title" id="cleanLogsModalLabel">Limpar Logs Antigos</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>

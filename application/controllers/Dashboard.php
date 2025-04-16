@@ -12,6 +12,7 @@ class Dashboard extends CI_Controller {
         $this->load->model('Inquilino_model');
         $this->load->model('Imovel_model');
         $this->load->model('Log_model');
+        $this->load->model('Dimob_model');
     }
 
     public function index() {
@@ -31,6 +32,18 @@ class Dashboard extends CI_Controller {
         $data['total_notas'] = $this->db->count_all('notas');
         $data['total_inquilinos'] = $this->db->count_all('inquilinos');
         $data['total_imoveis'] = $this->db->count_all('imoveis');
+        
+        // Estatísticas DIMOB
+        $data['total_dimob_enviado'] = $this->db->where('dimob_enviado', 1)->count_all_results('notas');
+        $data['total_dimob_pendente'] = $data['total_notas'] - $data['total_dimob_enviado'];
+        
+        // Obtém o ano atual para DIMOB
+        $ano_atual = date('Y');
+        $data['ano_atual'] = $ano_atual;
+        
+        // Notas do ano atual
+        $this->db->where('YEAR(competencia)', $ano_atual);
+        $data['notas_ano_atual'] = $this->db->count_all_results('notas');
         
         // Buscar notas recentes para mostrar nas atividades
         $this->db->order_by('data_emissao', 'DESC');

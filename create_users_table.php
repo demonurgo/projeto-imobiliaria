@@ -36,10 +36,10 @@ if (mysqli_num_rows($result) == 0) {
         $password = password_hash('admin123', PASSWORD_DEFAULT);
         $email = 'admin@example.com';
         $name = 'Administrador';
-        $role = 'admin';
+        $role = '1';
         
-        $sql = "INSERT INTO users (username, password, email, name, role, active) 
-                VALUES ('$username', '$password', '$email', '$name', '$role', 1)";
+        $sql = "INSERT INTO users (username, password, email, name, is_admin) 
+                VALUES ('$username', '$password', '$email', '$name', '$role')";
         
         if (mysqli_query($conn, $sql)) {
             echo "Usuário admin criado com sucesso!<br>";
@@ -64,10 +64,10 @@ if (mysqli_num_rows($result) == 0) {
         $password = password_hash('admin123', PASSWORD_DEFAULT);
         $email = 'admin@example.com';
         $name = 'Administrador';
-        $role = 'admin';
+        $role = '1';
         
-        $sql = "INSERT INTO users (username, password, email, name, role, active) 
-                VALUES ('$username', '$password', '$email', '$name', '$role', 1)";
+        $sql = "INSERT INTO users (username, password, email, name, is_admin) 
+                VALUES ('$username', '$password', '$email', '$name', '$role')";
         
         if (mysqli_query($conn, $sql)) {
             echo "Usuário admin criado com sucesso!<br>";

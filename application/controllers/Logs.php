@@ -105,7 +105,14 @@ class Logs extends CI_Controller {
         $data['total_rows'] = $total_rows;
         
         // Dados para os filtros
-        $data['users'] = $this->User_model->get_all_array();
+        $users = $this->User_model->get_all_array();
+        // Certifique-se de que temos o formato correto para a view
+        if (!empty($users) && is_array($users)) {
+            // Mantenha a estrutura de array como está para compatibilidade com as alterações na view
+            $data['users'] = $users;
+        } else {
+            $data['users'] = [];
+        }
         $data['filters'] = $filters;
         
         // Definir os módulos e ações disponíveis
@@ -189,23 +196,23 @@ class Logs extends CI_Controller {
             redirect('logs');
         }
         
-        // Regras de validação
-        $this->form_validation->set_rules('days', 'Dias', 'required|numeric|greater_than[30]');
+        // Verificar se temos o valor de dias
+        $days = $this->input->post('days');
         
-        if ($this->form_validation->run() === FALSE) {
+        if (empty($days) || !is_numeric($days) || $days < 30) {
             $this->session->set_flashdata('error', 'Não foi possível limpar os logs. O número de dias deve ser maior que 30.');
             redirect('logs');
-        } else {
-            // Limpar logs
-            $days = $this->input->post('days');
-            $removed = $this->Log_model->clean_old_logs($days);
-            
-            // Registrar a limpeza
-            $this->Log_model->add_log('clean', 'system', null, 'Limpeza de logs antigos: removidos ' . $removed . ' registros com mais de ' . $days . ' dias');
-            
-            $this->session->set_flashdata('success', 'Foram removidos ' . $removed . ' registros de log com mais de ' . $days . ' dias.');
-            redirect('logs');
+            return;
         }
+        
+        // Limpar logs
+        $removed = $this->Log_model->clean_old_logs($days);
+        
+        // Registrar a limpeza no próprio sistema de logs
+        $this->Log_model->add_log('clean', 'system', null, 'Limpeza de logs antigos: removidos ' . $removed . ' registros com mais de ' . $days . ' dias');
+        
+        $this->session->set_flashdata('success', 'Foram removidos ' . $removed . ' registros de log com mais de ' . $days . ' dias.');
+        redirect('logs');
     }
     
     public function export() {

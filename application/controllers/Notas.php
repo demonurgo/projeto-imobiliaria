@@ -57,6 +57,35 @@ class Notas extends CI_Controller {
             redirect('notas');
         }
         
+        // Recuperar dados do inquilino, se existir
+        if (!empty($nota['inquilino_id'])) {
+            $inquilino = $this->Inquilino_model->get_by_id($nota['inquilino_id']);
+            if ($inquilino) {
+                $nota['inquilino_nome'] = $inquilino['nome'];
+                $nota['inquilino_cpf_cnpj'] = isset($inquilino['cpf_cnpj']) ? $inquilino['cpf_cnpj'] : $inquilino['cpf'];
+            }
+        }
+        
+        // Verificar status e observações
+        if (!isset($nota['status'])) {
+            $nota['status'] = 'importado';
+        }
+        
+        if (!isset($nota['observacoes'])) {
+            $nota['observacoes'] = '';
+        }
+        
+        // Recuperar dados do imóvel, se existir
+        if (!empty($nota['imovel_id'])) {
+            $imovel = $this->Imovel_model->get_by_id($nota['imovel_id']);
+            if ($imovel) {
+                $nota['imovel_endereco'] = $imovel['endereco'];
+                $nota['imovel_numero'] = $imovel['numero'];
+                $nota['imovel_complemento'] = $imovel['complemento'];
+                $nota['valor_aluguel'] = $imovel['valor_aluguel'];
+            }
+        }
+        
         $data['title'] = 'Editar Nota Fiscal';
         $data['active'] = 'notas';
         $data['nota'] = $nota;
@@ -74,68 +103,147 @@ class Notas extends CI_Controller {
             $this->load->view('notas/edit', $data);
             $this->load->view('templates/footer');
         } else {
-            // Verificar se foi feito cadastro manual de inquilino
+            // Processamento do inquilino
             $inquilino_id = $this->input->post('inquilino_id');
+            $inquilino_nome = $this->input->post('inquilino_nome');
+            $inquilino_documento = $this->input->post('inquilino_documento');
             
-            // Se não foi selecionado um inquilino existente, mas temos dados manuais, criar novo inquilino
-            if (empty($inquilino_id) && !empty($this->input->post('inquilino_nome')) && !empty($this->input->post('inquilino_documento'))) {
+            // Criar ou atualizar inquilino
+            if (!empty($inquilino_nome) && !empty($inquilino_documento)) {
                 $inquilino_data = array(
-                    'nome' => $this->input->post('inquilino_nome')
+                    'nome' => $inquilino_nome,
+                    'cpf_cnpj' => $inquilino_documento
                 );
                 
-                // Definir o tipo de documento (CPF ou CNPJ)
-                if ($this->input->post('inquilino_tipo_documento') == 'cpf') {
-                    $inquilino_data['cpf'] = $this->input->post('inquilino_documento');
+                // Se selecionou um inquilino existente, atualizar seus dados
+                if (!empty($inquilino_id)) {
+                    $this->Inquilino_model->update($inquilino_id, $inquilino_data);
                 } else {
-                    $inquilino_data['cnpj_inquilino'] = $this->input->post('inquilino_documento');
+                    // Caso contrário, criar um novo
+                    $inquilino_id = $this->Inquilino_model->save($inquilino_data);
                 }
-                
-                // Salvar o novo inquilino
-                $inquilino_id = $this->Inquilino_model->save($inquilino_data);
             }
             
-            // Verificar se precisamos criar ou atualizar um imóvel com valor de aluguel
+            // Processamento do imóvel
             $imovel_id = $this->input->post('imovel_id');
+            $imovel_endereco = $this->input->post('imovel_endereco');
+            $imovel_numero = $this->input->post('imovel_numero');
+            $imovel_complemento = $this->input->post('imovel_complemento');
             $valor_aluguel = $this->input->post('valor_aluguel');
             
-            // Se temos um imóvel selecionado e um valor de aluguel, atualizar o imóvel
-            if (!empty($imovel_id) && !empty($valor_aluguel)) {
-                $this->Imovel_model->update($imovel_id, array('valor_aluguel' => $valor_aluguel));
-            }
-            // Se não temos imóvel selecionado mas temos inquilino e discriminação, criar novo imóvel
-            elseif (empty($imovel_id) && !empty($inquilino_id) && !empty($valor_aluguel)) {
-                // Extrair possível endereço da discriminação
-                $discriminacao = $this->input->post('discriminacao');
-                $partes = explode("\n", $discriminacao);
-                $endereco_imovel = (count($partes) >= 2) ? trim($partes[1]) : 'Endereço não especificado';
-                
+            // Criar ou atualizar imóvel
+            if (!empty($imovel_endereco)) {
                 $imovel_data = array(
-                    'endereco' => $endereco_imovel,
-                    'inquilino_id' => $inquilino_id,
-                    'valor_aluguel' => $valor_aluguel
+                    'endereco' => $imovel_endereco,
+                    'inquilino_id' => $inquilino_id
                 );
                 
-                $imovel_id = $this->Imovel_model->save($imovel_data);
+                // Adicionar o número e complemento se fornecidos
+                if (!empty($imovel_numero)) {
+                    $imovel_data['numero'] = $imovel_numero;
+                }
+                
+                if (!empty($imovel_complemento)) {
+                    $imovel_data['complemento'] = $imovel_complemento;
+                }
+                
+                if (!empty($valor_aluguel)) {
+                    $imovel_data['valor_aluguel'] = $valor_aluguel;
+                }
+                
+                // Se selecionou um imóvel existente, atualizar seus dados
+                if (!empty($imovel_id)) {
+                    $this->Imovel_model->update($imovel_id, $imovel_data);
+                } else {
+                    // Caso contrário, criar um novo
+                    $imovel_id = $this->Imovel_model->save($imovel_data);
+                }
+            }
+            // Se selecionou um imóvel mas não preencheu o endereço, apenas atualizar os campos fornecidos
+            elseif (!empty($imovel_id)) {
+                $update_data = array(
+                    'inquilino_id' => $inquilino_id
+                );
+                
+                // Adicionar apenas os campos que foram preenchidos
+                if (!empty($valor_aluguel)) {
+                    $update_data['valor_aluguel'] = $valor_aluguel;
+                }
+                
+                if (!empty($imovel_numero)) {
+                    $update_data['numero'] = $imovel_numero;
+                }
+                
+                if (!empty($imovel_complemento)) {
+                    $update_data['complemento'] = $imovel_complemento;
+                }
+                
+                $this->Imovel_model->update($imovel_id, $update_data);
+            }
+            
+            // Verificar se o CPF/CNPJ do tomador é igual ao do inquilino
+            $tomador_id = $this->input->post('tomador_id');
+            $tomador = $this->Tomador_model->get_by_id($tomador_id);
+            $tomador_cpf_cnpj = $tomador ? $tomador['cpf_cnpj'] : '';
+            
+            $cpf_cnpj_duplicado = false;
+            $observacoes = '';
+            
+            if (!empty($inquilino_id) && !empty($tomador_cpf_cnpj) && !empty($inquilino_documento)) {
+                if ($tomador_cpf_cnpj === $inquilino_documento) {
+                    $cpf_cnpj_duplicado = true;
+                    $observacoes = 'ATENÇÃO: O CPF/CNPJ do tomador é igual ao do inquilino. Verifique se os dados estão corretos.';
+                }
+            }
+            
+            // Atualizar a nota com os novos dados
+            $valor_servicos = $this->input->post('valor_servicos');
+            
+            // Formatar competência corretamente (garantir formato YYYY-MM-DD)
+            $competencia = $this->input->post('competencia');
+            
+            // Se a competência estiver no formato YYYY-MM (sem dia)
+            if (preg_match('/^\d{4}-\d{2}$/', $competencia)) {
+                $competencia = $competencia . '-01'; // Adicionar o dia 01
+            }
+            // Se a competência for apenas o mês/ano no formato MM/YYYY
+            else if (preg_match('/^\d{2}\/\d{4}$/', $competencia)) {
+                list($mes, $ano) = explode('/', $competencia);
+                $competencia = $ano . '-' . $mes . '-01';
+            }
+            // Se estiver vazio, usar a data atual
+            else if (empty($competencia)) {
+                $competencia = date('Y-m-01'); // Primeiro dia do mês atual
             }
             
             $update_data = array(
                 'numero' => $this->input->post('numero'),
                 'codigo_verificacao' => $this->input->post('codigo_verificacao'),
                 'data_emissao' => $this->input->post('data_emissao'),
-                'competencia' => $this->input->post('competencia'),
-                'valor_servicos' => $this->input->post('valor_servicos'),
+                'competencia' => $competencia, // Usar a competência formatada
+                'valor_servicos' => $valor_servicos,
                 'valor_iss' => $this->input->post('valor_iss'),
                 'base_calculo' => $this->input->post('base_calculo'),
                 'aliquota' => $this->input->post('aliquota'),
-                'valor_liquido' => $this->input->post('valor_liquido'),
+                // Garante que valor_liquido sempre seja igual ao valor_servicos
+                'valor_liquido' => $valor_servicos,
                 'discriminacao' => $this->input->post('discriminacao'),
                 'descricao_servico' => $this->input->post('descricao_servico'),
                 'prestador_id' => $this->input->post('prestador_id'),
                 'tomador_id' => $this->input->post('tomador_id'),
-                'inquilino_id' => $inquilino_id,
-                'imovel_id' => $imovel_id,
-                'editado_manualmente' => 1
+                'status' => $cpf_cnpj_duplicado ? 'revisar' : 'atualizado',
+                'observacoes' => $cpf_cnpj_duplicado ? $observacoes : (isset($nota['observacoes']) ? $nota['observacoes'] : ''),
+                'editado_manualmente' => 1  // Marca como editado manualmente
             );
+            
+            // Adicionar referências aos inquilinos e imóveis, se existirem
+            if (!empty($inquilino_id)) {
+                $update_data['inquilino_id'] = $inquilino_id;
+            }
+            
+            if (!empty($imovel_id)) {
+                $update_data['imovel_id'] = $imovel_id;
+            }
             
             if ($this->Nota_model->update($id, $update_data)) {
                 $this->session->set_flashdata('success', 'Nota fiscal atualizada com sucesso.');
@@ -147,6 +255,30 @@ class Notas extends CI_Controller {
                 $this->load->view('templates/footer');
             }
         }
+    }
+    
+    public function visualizar($id) {
+        // Alias para o método view
+        return $this->view($id);
+    }
+    
+    public function listar_por_batch($batch_id) {
+        if (!$batch_id) {
+            $this->session->set_flashdata('error', 'Batch ID não fornecido.');
+            redirect('logs/importacao');
+        }
+        
+        // Carregar notas do batch específico
+        $notas = $this->Nota_model->get_by_batch($batch_id);
+        
+        $data['title'] = 'Notas do Lote #' . $batch_id;
+        $data['active'] = 'notas';
+        $data['notas'] = $notas;
+        $data['batch_id'] = $batch_id;
+        
+        $this->load->view('templates/header', $data);
+        $this->load->view('notas/batch', $data);
+        $this->load->view('templates/footer');
     }
     
     public function delete($id) {
@@ -380,5 +512,24 @@ class Notas extends CI_Controller {
         }
         
         echo '</pre>';
+    }
+    
+    public function dimob($id, $status) {
+        $nota = $this->Nota_model->get_by_id($id);
+        
+        if (!$nota) {
+            $this->session->set_flashdata('error', 'Nota fiscal não encontrada.');
+            redirect('notas');
+        }
+        
+        // Atualizar status DIMOB
+        if ($this->Nota_model->update($id, ['dimob_enviado' => $status])) {
+            $this->session->set_flashdata('success', 'Status DIMOB atualizado com sucesso.');
+        } else {
+            $this->session->set_flashdata('error', 'Erro ao atualizar status DIMOB.');
+        }
+        
+        // Redirecionar de volta para a lista
+        redirect('notas');
     }
 }

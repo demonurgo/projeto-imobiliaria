@@ -12,6 +12,12 @@
                     </div>
                     <?php endif; ?>
                     
+                    <?php if(isset($nota['status']) && $nota['status'] === 'revisar'): ?>
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i> <strong>Atenção:</strong> O CPF/CNPJ do tomador (proprietário) é igual ao do inquilino (locatário). Isso pode indicar um erro de cadastro. Por favor, verifique os dados.
+                    </div>
+                    <?php endif; ?>
+                    
                     <?php if(validation_errors()): ?>
                     <div class="alert alert-warning">
                         <i class="fas fa-exclamation-triangle"></i> <?php echo validation_errors(); ?>
@@ -87,7 +93,7 @@
                                     <option value="">Selecione o prestador</option>
                                     <?php foreach($prestadores as $prestador): ?>
                                     <option value="<?= $prestador['id'] ?>" <?= ($prestador['id'] == $nota['prestador_id']) ? 'selected' : '' ?>>
-                                        <?= $prestador['razao_social'] ?> - <?= $prestador['cnpj'] ?>
+                                        <?= $prestador['razao_social'] ?> - <?= $prestador['cnpj'] ?> - <?= $prestador['cpf'] ?>
                                     </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -100,7 +106,9 @@
                                 <select class="form-select" id="tomador_id" name="tomador_id" required>
                                     <option value="">Selecione o tomador</option>
                                     <?php foreach($tomadores as $tomador): ?>
-                                    <option value="<?= $tomador['id'] ?>" <?= ($tomador['id'] == $nota['tomador_id']) ? 'selected' : '' ?>>
+                                    <option value="<?= $tomador['id'] ?>" 
+                                        data-cpf-cnpj="<?= $tomador['cpf_cnpj'] ?>" 
+                                        <?= ($tomador['id'] == $nota['tomador_id']) ? 'selected' : '' ?>>
                                         <?= $tomador['razao_social'] ?> - <?= $tomador['cpf_cnpj'] ?>
                                     </option>
                                     <?php endforeach; ?>
@@ -116,72 +124,116 @@
                         </div>
                         
                         <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="inquilino_id" class="form-label">Inquilino</label>
-                                <select class="form-select" id="inquilino_id" name="inquilino_id">
-                                    <option value="">Selecione o inquilino (opcional)</option>
-                                    <?php foreach($inquilinos as $inquilino): ?>
-                                    <option value="<?= $inquilino['id'] ?>" <?= ($inquilino['id'] == $nota['inquilino_id']) ? 'selected' : '' ?>>
-                                        <?= $inquilino['nome'] ?> - <?= $inquilino['cpf_cnpj'] ?>
-                                    </option>
-                                    <?php endforeach; ?>
-                                </select>
-                                <div class="form-text">Selecione o inquilino relacionado a esta nota ou cadastre manualmente abaixo.</div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="imovel_id" class="form-label">Imóvel</label>
-                                <select class="form-select" id="imovel_id" name="imovel_id">
-                                    <option value="">Selecione o imóvel (opcional)</option>
-                                    <?php foreach($imoveis as $imovel): ?>
-                                    <option value="<?= $imovel['id'] ?>" <?= ($imovel['id'] == $nota['imovel_id']) ? 'selected' : '' ?>>
-                                        <?= $imovel['endereco'] ?> <?php if(!empty($imovel['valor_aluguel'])): ?>(Aluguel: R$ <?= number_format($imovel['valor_aluguel'], 2, ',', '.') ?>)<?php endif; ?>
-                                    </option>
-                                    <?php endforeach; ?>
-                                </select>
-                                <div class="form-text">Selecione o imóvel relacionado a esta nota.</div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-12 mt-3 mb-4" id="cadastro-manual-inquilino">
-                            <div class="card">
+                            <div class="card mb-4">
                                 <div class="card-header bg-light">
-                                    <h5 class="mb-0">Cadastro Manual de Inquilino</h5>
+                                    <h5 class="mb-0">Dados do Inquilino</h5>
                                 </div>
                                 <div class="card-body">
-                                    <p class="text-muted">Preencha os campos abaixo se não encontrar o inquilino na lista acima.</p>
-                                    
                                     <div class="row">
-                                        <div class="col-md-4">
-                                            <div class="mb-3">
-                                                <label for="inquilino_tipo_documento" class="form-label">Tipo de Documento</label>
-                                                <select class="form-select" id="inquilino_tipo_documento" name="inquilino_tipo_documento">
-                                                    <option value="cpf">CPF</option>
-                                                    <option value="cnpj">CNPJ</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="col-md-8">
-                                            <div class="mb-3">
-                                                <label for="inquilino_documento" class="form-label">CPF/CNPJ</label>
-                                                <input type="text" class="form-control" id="inquilino_documento" name="inquilino_documento" placeholder="Somente números">
-                                            </div>
+                                        <div class="col-md-12 mb-3">
+                                            <label for="inquilino_id" class="form-label">Selecionar Inquilino Existente (opcional)</label>
+                                            <select class="form-select" id="inquilino_id" name="inquilino_id">
+                                                <option value="">Nenhum - Usar dados abaixo</option>
+                                                <?php foreach($inquilinos as $inquilino): ?>
+                                                <option value="<?= $inquilino['id'] ?>" 
+                                                    data-nome="<?= $inquilino['nome'] ?>" 
+                                                    data-documento="<?= isset($inquilino['cpf_cnpj']) ? $inquilino['cpf_cnpj'] : (isset($inquilino['cpf']) ? $inquilino['cpf'] : '') ?>"
+                                                    <?= ($inquilino['id'] == $nota['inquilino_id']) ? 'selected' : '' ?>>
+                                                    <?= $inquilino['nome'] ?> - <?= isset($inquilino['cpf_cnpj']) ? $inquilino['cpf_cnpj'] : (isset($inquilino['cpf']) ? $inquilino['cpf'] : '') ?>
+                                                </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                            <div class="form-text">Selecionar um inquilino preencherá automaticamente os campos abaixo.</div>
                                         </div>
                                         
                                         <div class="col-md-8">
                                             <div class="mb-3">
                                                 <label for="inquilino_nome" class="form-label">Nome do Inquilino</label>
-                                                <input type="text" class="form-control" id="inquilino_nome" name="inquilino_nome">
+                                                <input type="text" class="form-control" id="inquilino_nome" name="inquilino_nome" 
+                                                    value="<?= isset($nota['inquilino_nome']) ? $nota['inquilino_nome'] : 
+                                                        (isset($nota['inquilino_id']) && !empty($nota['inquilino_id']) ? 
+                                                        $this->Inquilino_model->get_by_id($nota['inquilino_id'])['nome'] : '') ?>">
                                             </div>
                                         </div>
                                         
                                         <div class="col-md-4">
                                             <div class="mb-3">
+                                                <label for="inquilino_documento" class="form-label">CPF/CNPJ</label>
+                                                <input type="text" class="form-control" id="inquilino_documento" name="inquilino_documento" placeholder="Somente números" 
+                                                    value="<?= isset($nota['inquilino_cpf_cnpj']) ? $nota['inquilino_cpf_cnpj'] : 
+                                                        (isset($nota['inquilino_id']) && !empty($nota['inquilino_id']) ? 
+                                                        (isset($this->Inquilino_model->get_by_id($nota['inquilino_id'])['cpf_cnpj']) ? 
+                                                        $this->Inquilino_model->get_by_id($nota['inquilino_id'])['cpf_cnpj'] : 
+                                                        $this->Inquilino_model->get_by_id($nota['inquilino_id'])['cpf']) : '') ?>">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">Dados do Imóvel</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                            <label for="imovel_id" class="form-label">Selecionar Imóvel Existente (opcional)</label>
+                                            <select class="form-select" id="imovel_id" name="imovel_id">
+                                                <option value="">Nenhum - Usar dados abaixo</option>
+                                                <?php foreach($imoveis as $imovel): ?>
+                                                <option value="<?= $imovel['id'] ?>"
+                                                    data-endereco="<?= $imovel['endereco'] ?>"
+                                                    data-numero="<?= $imovel['numero'] ?>"
+                                                    data-complemento="<?= $imovel['complemento'] ?>"
+                                                    data-valor="<?= $imovel['valor_aluguel'] ?>"
+                                                    <?= ($imovel['id'] == $nota['imovel_id']) ? 'selected' : '' ?>>
+                                                    <?= $imovel['endereco'] ?> <?php if(!empty($imovel['numero'])): ?>, <?= $imovel['numero'] ?><?php endif; ?> <?php if(!empty($imovel['complemento'])): ?> - <?= $imovel['complemento'] ?><?php endif; ?> <?php if(!empty($imovel['valor_aluguel'])): ?>(Aluguel: R$ <?= number_format($imovel['valor_aluguel'], 2, ',', '.') ?>)<?php endif; ?>
+                                                </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                            <div class="form-text">Selecionar um imóvel preencherá automaticamente os campos abaixo.</div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="imovel_endereco" class="form-label">Endereço do Imóvel</label>
+                                                <input type="text" class="form-control" id="imovel_endereco" name="imovel_endereco" 
+                                                    value="<?= isset($nota['imovel_endereco']) ? $nota['imovel_endereco'] : 
+                                                        (isset($nota['imovel_id']) && !empty($nota['imovel_id']) ? 
+                                                        $this->Imovel_model->get_by_id($nota['imovel_id'])['endereco'] : '') ?>">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-2">
+                                            <div class="mb-3">
+                                                <label for="imovel_numero" class="form-label">Número</label>
+                                                <input type="text" class="form-control" id="imovel_numero" name="imovel_numero" 
+                                                    value="<?= isset($nota['imovel_numero']) ? $nota['imovel_numero'] : 
+                                                        (isset($nota['imovel_id']) && !empty($nota['imovel_id']) ? 
+                                                        $this->Imovel_model->get_by_id($nota['imovel_id'])['numero'] : '') ?>">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="imovel_complemento" class="form-label">Complemento</label>
+                                                <input type="text" class="form-control" id="imovel_complemento" name="imovel_complemento" 
+                                                    value="<?= isset($nota['imovel_complemento']) ? $nota['imovel_complemento'] : 
+                                                        (isset($nota['imovel_id']) && !empty($nota['imovel_id']) ? 
+                                                        $this->Imovel_model->get_by_id($nota['imovel_id'])['complemento'] : '') ?>">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-12">
+                                            <div class="mb-3">
                                                 <label for="valor_aluguel" class="form-label">Valor do Aluguel (R$)</label>
-                                                <input type="number" class="form-control" id="valor_aluguel" name="valor_aluguel" step="0.01">
+                                                <input type="number" class="form-control" id="valor_aluguel" name="valor_aluguel" step="0.01" 
+                                                    value="<?= isset($nota['valor_aluguel']) ? $nota['valor_aluguel'] : 
+                                                        (isset($nota['imovel_id']) && !empty($nota['imovel_id']) ? 
+                                                        $this->Imovel_model->get_by_id($nota['imovel_id'])['valor_aluguel'] : '') ?>">
                                             </div>
                                         </div>
                                     </div>
@@ -203,7 +255,6 @@
                                 <div class="form-text">
                                     Este é o campo original "Discriminação" do XML. Formato esperado:
                                     <code>#CPF_OU_CNPJ#NOME_INQUILINO#VALOR_ALUGUEL# DESCRIÇÃO DO SERVIÇO</code>
-                                    <code>ENDEREÇO DO IMÓVEL</code>
                                 </div>
                             </div>
                         </div>
@@ -239,25 +290,48 @@
             }, false);
         });
         
-        // Função para alternar a visibilidade do formulário manual de inquilino
+        // Função para preencher automaticamente os campos do inquilino
         const inquilinoSelect = document.getElementById('inquilino_id');
-        const manualInquilinoCard = document.getElementById('cadastro-manual-inquilino');
+        const inquilinoNome = document.getElementById('inquilino_nome');
+        const inquilinoDocumento = document.getElementById('inquilino_documento');
         
-        function toggleManualInquilinoForm() {
+        function updateInquilinoFields() {
             if (inquilinoSelect.value === '') {
-                manualInquilinoCard.style.display = 'block';
+                // Não limpar automaticamente para permitir edição manual
             } else {
-                manualInquilinoCard.style.display = 'none';
-                // Limpar campos do formulário manual quando um inquilino é selecionado
-                document.getElementById('inquilino_documento').value = '';
-                document.getElementById('inquilino_nome').value = '';
+                // Preencher com os dados do inquilino selecionado
+                const selectedOption = inquilinoSelect.options[inquilinoSelect.selectedIndex];
+                inquilinoNome.value = selectedOption.getAttribute('data-nome') || '';
+                inquilinoDocumento.value = selectedOption.getAttribute('data-documento') || '';
             }
         }
         
-        // Inicializar o estado do formulário
-        toggleManualInquilinoForm();
+        // Função para preencher automaticamente os campos do imóvel
+        const imovelSelect = document.getElementById('imovel_id');
+        const imovelEndereco = document.getElementById('imovel_endereco');
+        const imovelNumero = document.getElementById('imovel_numero');
+        const imovelComplemento = document.getElementById('imovel_complemento');
+        const valorAluguel = document.getElementById('valor_aluguel');
         
-        // Adicionar evento de mudança no select de inquilino
-        inquilinoSelect.addEventListener('change', toggleManualInquilinoForm);
+        function updateImovelFields() {
+            if (imovelSelect.value === '') {
+                // Não limpar automaticamente para permitir edição manual
+            } else {
+                // Preencher com os dados do imóvel selecionado
+                const selectedOption = imovelSelect.options[imovelSelect.selectedIndex];
+                imovelEndereco.value = selectedOption.getAttribute('data-endereco') || '';
+                imovelNumero.value = selectedOption.getAttribute('data-numero') || '';
+                imovelComplemento.value = selectedOption.getAttribute('data-complemento') || '';
+                valorAluguel.value = selectedOption.getAttribute('data-valor') || '';
+            }
+        }
+        
+        // Inicializar campos com base nas seleções atuais
+        updateInquilinoFields();
+        updateImovelFields();
+        
+        // Adicionar eventos de mudança
+        inquilinoSelect.addEventListener('change', updateInquilinoFields);
+        imovelSelect.addEventListener('change', updateImovelFields);
     });
 </script>

@@ -18,7 +18,7 @@
     </div>
     
     <div class="row">
-        <div class="col-md-4 mb-4">
+        <div class="col-md-3 mb-4">
             <div class="card h-100">
                 <div class="card-header bg-success text-white">
                     <h5 class="card-title mb-0"><i class="fas fa-file-invoice"></i> Notas Fiscais</h5>
@@ -33,7 +33,7 @@
             </div>
         </div>
         
-        <div class="col-md-4 mb-4">
+        <div class="col-md-3 mb-4">
             <div class="card h-100">
                 <div class="card-header bg-warning text-dark">
                     <h5 class="card-title mb-0"><i class="fas fa-user-tie"></i> Inquilinos</h5>
@@ -48,7 +48,7 @@
             </div>
         </div>
         
-        <div class="col-md-4 mb-4">
+        <div class="col-md-3 mb-4">
             <div class="card h-100">
                 <div class="card-header bg-info text-white">
                     <h5 class="card-title mb-0"><i class="fas fa-building"></i> Imóveis</h5>
@@ -59,6 +59,59 @@
                     <a href="<?php echo base_url('imoveis'); ?>" class="btn btn-outline-info">
                         <i class="fas fa-eye"></i> Visualizar
                     </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0"><i class="fas fa-file-export"></i> DIMOB</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h1 class="display-4"><?= isset($notas_ano_atual) ? $notas_ano_atual : 0 ?></h1>
+                    <p class="card-text">Notas para DIMOB <?= $ano_atual ?></p>
+                    <a href="<?php echo base_url('dimob'); ?>" class="btn btn-outline-primary">
+                        <i class="fas fa-cog"></i> Gerar DIMOB
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Estatísticas DIMOB -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0"><i class="fas fa-chart-pie"></i> Status DIMOB</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="progress" style="height: 30px;">
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: <?= $total_notas > 0 ? ($total_dimob_enviado / $total_notas) * 100 : 0 ?>%" 
+                                     aria-valuenow="<?= $total_dimob_enviado ?>" aria-valuemin="0" aria-valuemax="<?= $total_notas ?>">
+                                    <?= $total_dimob_enviado ?> Notas Processadas
+                                </div>
+                                <div class="progress-bar bg-warning" role="progressbar" 
+                                     style="width: <?= $total_notas > 0 ? ($total_dimob_pendente / $total_notas) * 100 : 0 ?>%" 
+                                     aria-valuenow="<?= $total_dimob_pendente ?>" aria-valuemin="0" aria-valuemax="<?= $total_notas ?>">
+                                    <?= $total_dimob_pendente ?> Pendentes
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-center">
+                                <p class="mb-1"><i class="fas fa-check-circle text-success"></i> <strong><?= $total_dimob_enviado ?></strong> notas incluídas em arquivos DIMOB</p>
+                                <p class="mb-1"><i class="fas fa-exclamation-circle text-warning"></i> <strong><?= $total_dimob_pendente ?></strong> notas pendentes de inclusão</p>
+                                <a href="<?php echo base_url('dimob'); ?>" class="btn btn-sm btn-primary mt-2">
+                                    <i class="fas fa-file-export"></i> Gerar Novo Arquivo DIMOB
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

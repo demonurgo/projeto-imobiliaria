@@ -326,4 +326,30 @@ class Log_model extends CI_Model {
         
         return $this->db->count_all_results($this->table);
     }
+    
+    /**
+     * Remove logs mais antigos que um determinado número de dias
+     * 
+     * @param int $days Número de dias (logs mais antigos que este número serão removidos)
+     * @return int Quantidade de registros removidos
+     */
+    public function clean_old_logs($days) {
+        // Valida o número de dias (deve ser maior que 30 por segurança)
+        if ($days < 30) {
+            return 0;
+        }
+        
+        // Calcula a data limite
+        $date_limit = date('Y-m-d', strtotime('-' . $days . ' days'));
+        
+        // Conta quantos registros serão removidos
+        $this->db->where('DATE(created_at) <', $date_limit);
+        $count = $this->db->count_all_results($this->table);
+        
+        // Remove os registros
+        $this->db->where('DATE(created_at) <', $date_limit);
+        $this->db->delete($this->table);
+        
+        return $count;
+    }
 }

@@ -1,4 +1,6 @@
 <div class="container-fluid">
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/jquery-mask-plugin@1.14.16/dist/jquery.mask.min.js"></script>
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Detalhes do Log de Importação</h1>
         <a href="<?= site_url('logs/importacao'); ?>" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">

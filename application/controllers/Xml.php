@@ -679,16 +679,36 @@ class Xml extends CI_Controller {
             }
             
             // Atualizar a nota com os novos dados
+            $valor_servicos = $this->input->post('valor_servicos');
+            
+            // Formatar competência corretamente (garantir formato YYYY-MM-DD)
+            $competencia = $this->input->post('competencia');
+            
+            // Se a competência estiver no formato YYYY-MM (sem dia)
+            if (preg_match('/^\d{4}-\d{2}$/', $competencia)) {
+                $competencia = $competencia . '-01'; // Adicionar o dia 01
+            }
+            // Se a competência for apenas o mês/ano no formato MM/YYYY
+            else if (preg_match('/^\d{2}\/\d{4}$/', $competencia)) {
+                list($mes, $ano) = explode('/', $competencia);
+                $competencia = $ano . '-' . $mes . '-01';
+            }
+            // Se estiver vazio, usar a data atual
+            else if (empty($competencia)) {
+                $competencia = date('Y-m-01'); // Primeiro dia do mês atual
+            }
+            
             $update_data = array(
                 'numero' => $this->input->post('numero'),
                 'codigo_verificacao' => $this->input->post('codigo_verificacao'),
                 'data_emissao' => $this->input->post('data_emissao'),
-                'competencia' => $this->input->post('competencia'),
-                'valor_servicos' => $this->input->post('valor_servicos'),
+                'competencia' => $competencia, // Usar a competência formatada
+                'valor_servicos' => $valor_servicos,
                 'valor_iss' => $this->input->post('valor_iss'),
                 'base_calculo' => $this->input->post('base_calculo'),
                 'aliquota' => $this->input->post('aliquota'),
-                'valor_liquido' => $this->input->post('valor_liquido'),
+                // Garante que valor_liquido sempre seja igual ao valor_servicos
+                'valor_liquido' => $valor_servicos,
                 'discriminacao' => $this->input->post('discriminacao'),
                 'descricao_servico' => $this->input->post('descricao_servico'),
                 'prestador_id' => $this->input->post('prestador_id'),
