@@ -65,7 +65,6 @@ if (!function_exists('dimob_format_document')) {
         $value = preg_replace('/[^0-9]/', '', $value);
         
         // Preenche com zeros à esquerda
-        // Para DIMOB, os documentos são alinhados à esquerda com zeros em espaços vazios
         return str_pad($value, $length, '0', STR_PAD_LEFT);
     }
 }
@@ -228,6 +227,8 @@ if (!function_exists('dimob_get_municipio_code')) {
             'PE|OLINDA' => '2491',
             'PE|JABOATAO DOS GUARARAPES' => '2475',
             'PE|PAULISTA' => '2495',
+            'PE|CAMARAGIBE' => '2453',
+            'PE|CABO DE SANTO AGOSTINHO' => '2445',
             'SP|SAO PAULO' => '7107',
             'RJ|RIO DE JANEIRO' => '6001',
             'MG|BELO HORIZONTE' => '4123',
@@ -238,8 +239,6 @@ if (!function_exists('dimob_get_municipio_code')) {
             'AM|MANAUS' => '0255',
             'PA|BELEM' => '0427',
             'CE|FORTALEZA' => '1389',
-            'PE|CAMARAGIBE' => '2453',
-            'PE|CABO DE SANTO AGOSTINHO' => '2445',
             // Adicionar mais códigos conforme necessário
         ];
         
