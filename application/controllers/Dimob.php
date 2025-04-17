@@ -487,15 +487,23 @@ class Dimob extends CI_Controller {
             // Adicionar o inquilino_id na atualização do imóvel
             $inquilino_id_safe = !empty($inquilino_id) ? (int)$inquilino_id : 'NULL';
             
+            // Obter os campos de endereço do imóvel
+            $imovel_cidade = $this->db->escape($this->input->post('imovel_cidade') ?: '');
+            $imovel_uf = $this->db->escape($this->input->post('imovel_uf') ?: '');
+            $imovel_cep = $this->db->escape($this->input->post('imovel_cep') ?: '');
+            
             $query = "UPDATE imoveis SET 
                       valor_aluguel = {$valor_aluguel_safe}, 
                       tipo_imovel = {$tipo_imovel},
                       inquilino_id = {$inquilino_id_safe},
+                      cidade = {$imovel_cidade},
+                      uf = {$imovel_uf},
+                      cep = {$imovel_cep},
                       updated_at = '{$data_atual}'
                       WHERE id = {$imovel_id_safe}";
                       
             // Debug - mostrar os valores que serão salvos no imóvel
-            log_message('debug', 'Dimob: Atualizando imóvel #' . $imovel_id . ' com valor_aluguel=' . $valor_aluguel_safe . ' e inquilino_id=' . $inquilino_id_safe);
+            log_message('debug', 'Dimob: Atualizando imóvel #' . $imovel_id . ' com valor_aluguel=' . $valor_aluguel_safe . ', inquilino_id=' . $inquilino_id_safe . ', cidade=' . $this->input->post('imovel_cidade') . ', uf=' . $this->input->post('imovel_uf') . ', cep=' . $this->input->post('imovel_cep'));
             log_message('debug', 'Dimob: Query de atualização do imóvel: ' . $query);
             
             $this->db->query($query);

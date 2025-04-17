@@ -192,6 +192,30 @@
                                             <div class="form-text">Imóvel associado a esta nota fiscal. Para alterar o imóvel, edite o registro da nota no módulo principal.</div>
                                         </div>
                                         
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="imovel_cidade" class="form-label">Cidade</label>
+                                                <input type="text" class="form-control" id="imovel_cidade" name="imovel_cidade" 
+                                                       value="<?= isset($imovel_atual['cidade']) ? $imovel_atual['cidade'] : '' ?>">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-2">
+                                            <div class="mb-3">
+                                                <label for="imovel_uf" class="form-label">UF</label>
+                                                <input type="text" class="form-control" id="imovel_uf" name="imovel_uf" maxlength="2" 
+                                                       value="<?= isset($imovel_atual['uf']) ? $imovel_atual['uf'] : '' ?>">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-3">
+                                            <div class="mb-3">
+                                                <label for="imovel_cep" class="form-label">CEP</label>
+                                                <input type="text" class="form-control" id="imovel_cep" name="imovel_cep" 
+                                                       value="<?= isset($imovel_atual['cep']) ? $imovel_atual['cep'] : '' ?>">
+                                            </div>
+                                        </div>
+                                        
                                         <div class="col-md-12">
                                             <div class="mb-3">
                                                 <label for="valor_aluguel" class="form-label">Valor do Aluguel (R$)</label>
