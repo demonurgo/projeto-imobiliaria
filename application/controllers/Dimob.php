@@ -198,6 +198,11 @@ class Dimob extends CI_Controller {
                 $data['nota']['inquilino_nome'] = $inquilino['nome'] ?? '';
                 $data['nota']['inquilino_email'] = $inquilino['email'] ?? '';
             }
+        } else {
+            // Garantir que não há dados de inquilino quando não há inquilino_id
+            unset($data['nota']['inquilino_cpf_cnpj']);
+            unset($data['nota']['inquilino_nome']);
+            unset($data['inquilino']);
         }
         
         // Buscar dados do tomador
@@ -237,6 +242,9 @@ class Dimob extends CI_Controller {
      * Processa a atualização de uma nota fiscal
      */
     public function atualizar_nota() {
+        // Debug - registrar todos os campos do formulário
+        log_message('debug', 'Dimob: DADOS DO FORMULÁRIO: ' . print_r($this->input->post(), true));
+        
         $nota_id = $this->input->post('id');
         $ano = $this->input->post('ano');
         $prestador_id = $this->input->post('prestador_id');
@@ -253,38 +261,103 @@ class Dimob extends CI_Controller {
         $valor_servicos_original = $nota['valor_servicos'];
         $valor_aluguel_original = $nota['valor_aluguel'] ?? 0;
         
-        // Formatar valor monetário (evitando multiplicação incorreta de valores)
-        $valor_servicos = $this->input->post('valor_servicos');
-        $valor_aluguel = $this->input->post('valor_aluguel');
+        // Formatar valor monetário (preservando os decimais)
+        // Primeiro verificar se foram enviados campos ocultos com os valores já formatados
+        $valor_servicos = $this->input->post('valor_servicos_hidden') ?: $this->input->post('valor_servicos');
+        $valor_aluguel = $this->input->post('valor_aluguel_hidden') ?: $this->input->post('valor_aluguel');
         
-        // Abordagem simplificada para resolver o problema: 
-        // 1. Comparar os valores numéricos depois de remover formatação
-        $valor_servicos_numerico = str_replace(['.', ','], ['', '.'], $valor_servicos);
-        $valor_servicos_original_numerico = str_replace(['.', ','], ['', '.'], $valor_servicos_original);
-        
-        $valor_aluguel_numerico = str_replace(['.', ','], ['', '.'], $valor_aluguel);
-        $valor_aluguel_original_numerico = str_replace(['.', ','], ['', '.'], $valor_aluguel_original);
-        
-        // 2. Se a diferença for pequena, assumir que não houve alteração real (apenas formatação)
-        $diferenca_servicos = abs((float)$valor_servicos_numerico - (float)$valor_servicos_original_numerico);
-        $diferenca_aluguel = abs((float)$valor_aluguel_numerico - (float)$valor_aluguel_original_numerico);
-        
-        // 3. Se a diferença for significativa e o valor for mais de 10x maior, provavelmente há erro
-        if ((float)$valor_servicos_original_numerico > 0 && 
-            (float)$valor_servicos_numerico / (float)$valor_servicos_original_numerico > 10) {
-            // Usar valor original
-            $valor_servicos = $valor_servicos_original;
+        // Função para converter valores monetários no formato brasileiro para float
+        function convert_br_money_to_float($valor) {
+            // Primeiro, limpar qualquer formatação não numérica exceto vírgula e ponto
+            $valor = preg_replace('/[^0-9,.]/', '', $valor);
+            
+            // Se o valor contém vírgula (formato brasileiro), converter corretamente
+            if (strpos($valor, ',') !== false) {
+                // Se tem pontos (ex: 1.234,56) - remover os pontos e substituir vírgula por ponto
+                if (strpos($valor, '.') !== false) {
+                    $valor = str_replace('.', '', $valor); // Remove pontos
+                }
+                $valor = str_replace(',', '.', $valor); // Substitui vírgula por ponto
+            }
+            
+            // Retornar como float com precisão de 2 casas decimais
+            return (float)$valor;
         }
         
-        if ((float)$valor_aluguel_original_numerico > 0 && 
-            (float)$valor_aluguel_numerico / (float)$valor_aluguel_original_numerico > 10) {
-            // Usar valor original
-            $valor_aluguel = $valor_aluguel_original;
+        // Usar os valores numéricos convertidos para salvar no banco
+        $valor_servicos = convert_br_money_to_float($valor_servicos);
+        $valor_aluguel = convert_br_money_to_float($valor_aluguel);
+        
+        // Log para debug
+        log_message('debug', 'Dimob: valor_servicos=' . $valor_servicos . ', valor_aluguel=' . $valor_aluguel);
+        
+        // Se os valores são 0, verificar se houve problema na conversão
+        if ($valor_servicos == 0 && $this->input->post('valor_servicos') != '0' && $this->input->post('valor_servicos') != '0,00') {
+            log_message('error', 'Dimob: Erro na conversão do valor_servicos: ' . $this->input->post('valor_servicos'));
+        }
+        
+        if ($valor_aluguel == 0 && $this->input->post('valor_aluguel') != '0' && $this->input->post('valor_aluguel') != '0,00') {
+            log_message('error', 'Dimob: Erro na conversão do valor_aluguel: ' . $this->input->post('valor_aluguel'));
         }
         
         // Obter dados completos das entidades selecionadas
         $tomador = $this->Tomador_model->get_by_id($this->input->post('tomador_id'));
-        $inquilino = $this->Inquilino_model->get_by_id($this->input->post('inquilino_id'));
+        
+        // Verificar se há dados de inquilino preenchidos no formulário
+        $inquilino_id = $this->input->post('inquilino_id');
+        $inquilino_nome = $this->input->post('inquilino_nome');
+        $inquilino_cpf_cnpj = preg_replace('/[^0-9]/', '', $this->input->post('inquilino_cpf_cnpj'));
+        $inquilino_email = $this->input->post('inquilino_email');
+        $inquilino_telefone = $this->input->post('inquilino_telefone');
+        
+        // Se temos CPF e nome do inquilino, mas não temos um inquilino_id ou este está vazio
+        if (!empty($inquilino_nome) && !empty($inquilino_cpf_cnpj) && (empty($inquilino_id) || $inquilino_id === '')) {
+            // Verificar se já existe um inquilino com este CPF/CNPJ
+            $inquilino_existente = $this->Inquilino_model->get_by_cpf($inquilino_cpf_cnpj);
+            
+            if ($inquilino_existente) {
+                // Se já existe, usar o ID existente
+                $inquilino_id = $inquilino_existente['id'];
+                $inquilino = $inquilino_existente;
+            } else {
+                // Se não existe, criar um novo inquilino
+                $dados_inquilino = [
+                    'nome' => $inquilino_nome,
+                    'cpf_cnpj' => $inquilino_cpf_cnpj,
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s')
+                ];
+                
+                if (!empty($inquilino_email)) {
+                    $dados_inquilino['email'] = $inquilino_email;
+                }
+                
+                if (!empty($inquilino_telefone)) {
+                    $dados_inquilino['telefone'] = $inquilino_telefone;
+                }
+                
+                // Salvar o novo inquilino e obter o ID
+                $inquilino_id = $this->Inquilino_model->save($dados_inquilino);
+                
+                log_message('debug', 'Dimob: Novo inquilino criado com ID=' . $inquilino_id . ' durante edição da nota ID=' . $nota_id . '. Será vinculado ao imóvel ID=' . $this->input->post('imovel_id'));
+                
+                // Log de criação do inquilino
+                if (method_exists($this, 'log_activity')) {
+                    $this->log_activity(
+                        'create',
+                        'inquilinos',
+                        $inquilino_id,
+                        'Inquilino criado automaticamente durante edição de nota fiscal DIMOB'
+                    );
+                }
+                
+                // Buscar o inquilino recém-criado
+                $inquilino = $this->Inquilino_model->get_by_id($inquilino_id);
+            }
+        } else {
+            // Buscar o inquilino normalmente se o ID existe
+            $inquilino = !empty($inquilino_id) ? $this->Inquilino_model->get_by_id($inquilino_id) : null;
+        }
         
         // Atualizar dados do tomador na base se houve alteração nos campos manuais
         $tomador_nome_form = $this->input->post('tomador_nome');
@@ -299,28 +372,26 @@ class Dimob extends CI_Controller {
         }
         
         // Atualizar dados do inquilino na base se houve alteração nos campos manuais
-        $inquilino_nome_form = $this->input->post('inquilino_nome');
-        if (!empty($inquilino_nome_form) && $inquilino && $inquilino['nome'] != $inquilino_nome_form) {
+        if (!empty($inquilino_nome) && $inquilino && $inquilino['nome'] != $inquilino_nome) {
             // O nome foi modificado no formulário, atualizar o registro do inquilino
             $this->Inquilino_model->update($inquilino['id'], [
-                'nome' => $inquilino_nome_form,
+                'nome' => $inquilino_nome,
                 'updated_at' => date('Y-m-d H:i:s')
             ]);
             // Atualizar o objeto local para refletir a mudança
-            $inquilino['nome'] = $inquilino_nome_form;
+            $inquilino['nome'] = $inquilino_nome;
         }
         
         // Verificar se o CPF/CNPJ do tomador é igual ao do inquilino
         // Obter os valores atualizados dos formulários
         $tomador_cpf_form = preg_replace('/[^0-9]/', '', $this->input->post('tomador_cpf_cnpj'));
-        $inquilino_cpf_form = preg_replace('/[^0-9]/', '', $this->input->post('inquilino_cpf_cnpj'));
         
         // Status padrão após atualização
         $status = 'atualizado';
         $observacoes = '';
         
         // Verifica se os CPFs são iguais - regra simples
-        if ($tomador_cpf_form === $inquilino_cpf_form) {
+        if ($tomador_cpf_form === $inquilino_cpf_cnpj) {
             $status = 'revisar';
             $observacoes = 'ATENÇÃO: O CPF/CNPJ do tomador é igual ao do inquilino.';
         }
@@ -350,7 +421,6 @@ class Dimob extends CI_Controller {
             'competencia' => $competencia, // Usar a competência formatada corretamente
             'prestador_id' => $this->input->post('prestador_id'),
             'tomador_id' => $this->input->post('tomador_id'),
-            'inquilino_id' => $this->input->post('inquilino_id'),
             'imovel_id' => $this->input->post('imovel_id'),
             'valor_servicos' => $valor_servicos,
             'valor_liquido' => $valor_servicos, // Garantir que valor_liquido seja sempre igual a valor_servicos
@@ -363,6 +433,18 @@ class Dimob extends CI_Controller {
             'atualizado_em' => date('Y-m-d H:i:s')
         ];
         
+        // Debug do valor antes da inserção/atualização
+        log_message('debug', 'Dimob: Valor do serviço EXATO a ser inserido no banco: ' . $valor_servicos);
+        log_message('debug', 'Dimob: Valor do aluguel EXATO a ser inserido no banco: ' . $valor_aluguel);
+        
+        // Se temos um inquilino_id válido, adicionar à nota
+        if (!empty($inquilino_id)) {
+            $dados['inquilino_id'] = $inquilino_id;
+        } else {
+            // Se não temos inquilino, definir como NULL ao invés de string vazia
+            $dados['inquilino_id'] = NULL;
+        }
+        
         // Adicionar o ID do usuário atual como atualizado_por apenas se estiver logado
         if ($this->session->userdata('user_id')) {
             $dados['atualizado_por'] = $this->session->userdata('user_id');
@@ -371,66 +453,95 @@ class Dimob extends CI_Controller {
             $dados['atualizado_por'] = NULL;
         }
         
-        // Atualizar o imóvel com o valor do aluguel e tipo
+        // Atualizar a nota - usar query direta para garantir precisão exata
+        $nota_id_safe = (int)$nota_id; // Garantir que é um inteiro seguro
+        $valor_servicos_safe = number_format($valor_servicos, 2, '.', ''); // Formato decimal SQL
+        
+        $query = "UPDATE notas SET 
+                  valor_servicos = {$valor_servicos_safe}, 
+                  valor_liquido = {$valor_servicos_safe} 
+                  WHERE id = {$nota_id_safe}";
+                  
+        $this->db->query($query);
+        
+        // Continuar com o resto da atualização usando o método normal
+        $dados_sem_valores = $dados;
+        unset($dados_sem_valores['valor_servicos']); // Já atualizado diretamente
+        unset($dados_sem_valores['valor_liquido']); // Já atualizado diretamente
+        
+        $sucesso = $this->Nota_model->update($nota_id, $dados_sem_valores);
+        
+        // Atualizar o imóvel com o valor do aluguel, tipo e inquilino_id
         $imovel_id = $this->input->post('imovel_id');
         
-        if ($imovel_id && !empty($valor_aluguel)) {
+        if ($imovel_id) {
             // Verificar se o valor do aluguel está correto antes de atualizar
             $imovel_atual = $this->Imovel_model->get_by_id($imovel_id);
             
-            // Se o valor atual for muito diferente do novo valor, pode ser um erro de formatação
-            // ex: se valor atual for 865.36 e novo for 86536.00, provavelmente houve erro
-            if (isset($imovel_atual['valor_aluguel']) && $valor_aluguel > ($imovel_atual['valor_aluguel'] * 10)) {
-                // Provável erro de formatação, usar o valor original
-                $valor_aluguel = $imovel_atual['valor_aluguel'];
-            }
+            // Usar query direta para garantir precisão exata dos valores decimais
+            $imovel_id_safe = (int)$imovel_id; // Garantir que é um inteiro seguro
+            $valor_aluguel_safe = number_format($valor_aluguel, 2, '.', ''); // Formato decimal SQL
+            $tipo_imovel = $this->db->escape($this->input->post('tipo_imovel')); // Escape para string
+            $data_atual = date('Y-m-d H:i:s');
             
-            $dados_imovel = [
-                'valor_aluguel' => $valor_aluguel,
-                'tipo_imovel' => $this->input->post('tipo_imovel'),
+            // Adicionar o inquilino_id na atualização do imóvel
+            $inquilino_id_safe = !empty($inquilino_id) ? (int)$inquilino_id : 'NULL';
+            
+            $query = "UPDATE imoveis SET 
+                      valor_aluguel = {$valor_aluguel_safe}, 
+                      tipo_imovel = {$tipo_imovel},
+                      inquilino_id = {$inquilino_id_safe},
+                      updated_at = '{$data_atual}'
+                      WHERE id = {$imovel_id_safe}";
+                      
+            // Debug - mostrar os valores que serão salvos no imóvel
+            log_message('debug', 'Dimob: Atualizando imóvel #' . $imovel_id . ' com valor_aluguel=' . $valor_aluguel_safe . ' e inquilino_id=' . $inquilino_id_safe);
+            log_message('debug', 'Dimob: Query de atualização do imóvel: ' . $query);
+            
+            $this->db->query($query);
+        }
+        
+        // Atualizar os dados adicionais nas entidades relacionadas se o inquilino já existia
+        // e os dados foram modificados no formulário
+        if (!empty($inquilino_id) && $inquilino) {
+            $dados_inquilino = [
                 'updated_at' => date('Y-m-d H:i:s')
             ];
             
-            $this->Imovel_model->update($imovel_id, $dados_imovel);
-        }
-        
-        // Atualizar os dados adicionais nas entidades relacionadas
-        // 1. Atualizar o inquilino
-        $inquilino_id = $this->input->post('inquilino_id');
-        if (!empty($inquilino_id)) {
-            $inquilino_cpf_cnpj = $this->input->post('inquilino_cpf_cnpj');
-            $inquilino_telefone = $this->input->post('inquilino_telefone');
-            $inquilino_email = $this->input->post('inquilino_email');
+            $atualizar_inquilino = false;
             
-            if (!empty($inquilino_cpf_cnpj) || !empty($inquilino_telefone) || !empty($inquilino_email)) {
-                $dados_inquilino = [
-                    'updated_at' => date('Y-m-d H:i:s')
-                ];
-                
-                if (!empty($inquilino_cpf_cnpj)) {
-                    $dados_inquilino['cpf_cnpj'] = preg_replace('/[^0-9]/', '', $inquilino_cpf_cnpj);
-                }
-                
-                if (!empty($inquilino_telefone)) {
-                    $dados_inquilino['telefone'] = $inquilino_telefone;
-                }
-                
-                if (!empty($inquilino_email)) {
-                    $dados_inquilino['email'] = $inquilino_email;
-                }
-                
+            // Só atualizar o CPF se foi modificado
+            if (!empty($inquilino_cpf_cnpj) && $inquilino['cpf_cnpj'] != $inquilino_cpf_cnpj) {
+                $dados_inquilino['cpf_cnpj'] = $inquilino_cpf_cnpj;
+                $atualizar_inquilino = true;
+            }
+            
+            // Atualizar telefone se foi fornecido e é diferente do atual
+            if (!empty($inquilino_telefone) && $inquilino['telefone'] != $inquilino_telefone) {
+                $dados_inquilino['telefone'] = $inquilino_telefone;
+                $atualizar_inquilino = true;
+            }
+            
+            // Atualizar email se foi fornecido e é diferente do atual
+            if (!empty($inquilino_email) && $inquilino['email'] != $inquilino_email) {
+                $dados_inquilino['email'] = $inquilino_email;
+                $atualizar_inquilino = true;
+            }
+            
+            // Só executar a atualização se algo mudou
+            if ($atualizar_inquilino) {
                 $this->Inquilino_model->update($inquilino_id, $dados_inquilino);
             }
         }
         
-        // 2. Atualizar dados do tomador, se necessário
+        // Atualizar dados do tomador, se necessário
         $tomador_id = $this->input->post('tomador_id');
-        if (!empty($tomador_id)) {
-            $tomador_cpf_cnpj = $this->input->post('tomador_cpf_cnpj');
+        if (!empty($tomador_id) && $tomador) {
+            $tomador_cpf_cnpj = preg_replace('/[^0-9]/', '', $this->input->post('tomador_cpf_cnpj'));
             
-            if (!empty($tomador_cpf_cnpj)) {
+            if (!empty($tomador_cpf_cnpj) && $tomador['cpf_cnpj'] != $tomador_cpf_cnpj) {
                 $dados_tomador = [
-                    'cpf_cnpj' => preg_replace('/[^0-9]/', '', $tomador_cpf_cnpj),
+                    'cpf_cnpj' => $tomador_cpf_cnpj,
                     'updated_at' => date('Y-m-d H:i:s')
                 ];
                 
@@ -441,6 +552,7 @@ class Dimob extends CI_Controller {
         // Atualizar a nota
         $sucesso = $this->Nota_model->update($nota_id, $dados);
         
+        // Verificar sucesso geral da operação
         if ($sucesso) {
             // Registrar log de atualização
             if (method_exists($this, 'log_activity')) {
@@ -452,7 +564,17 @@ class Dimob extends CI_Controller {
                 );
             }
             
-            $this->session->set_flashdata('success', 'Nota fiscal atualizada com sucesso');
+            // Criar mensagem de sucesso detalhada para ajudar no debug
+            $msg_sucesso = 'Nota fiscal atualizada com sucesso' . 
+                         (!empty($inquilino_id) && empty($nota['inquilino_id']) ? ' e inquilino cadastrado' : '');
+                         
+            // Adicionar informações dos valores para debug
+            if (ENVIRONMENT === 'development') {
+                $msg_sucesso .= '. Valores salvos: Serviço=' . number_format($valor_servicos, 2, ',', '.') . 
+                              ', Aluguel=' . number_format($valor_aluguel, 2, ',', '.');
+            }
+            
+            $this->session->set_flashdata('success', $msg_sucesso);
         } else {
             $this->session->set_flashdata('error', 'Erro ao atualizar nota fiscal');
         }

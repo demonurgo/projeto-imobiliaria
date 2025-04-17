@@ -237,8 +237,8 @@ class Dimob_model extends CI_Model {
         $linha .= '03100702441';
         
         // Endereço completo do prestador (limitar a 120 caracteres e MAIÚSCULAS)
-        // Corrigindo a duplicação do número no endereço
-        $endereco_completo = strtoupper(remove_accents('RUA ' . $prestador['endereco'] . ' ' . $prestador['numero']));
+        // Usando apenas o campo endereço sem concatenar o número e sem adicionar "RUA"
+        $endereco_completo = strtoupper(remove_accents($prestador['endereco']));
         $linha .= str_pad(substr($endereco_completo, 0, 120), 120, ' ', STR_PAD_RIGHT);
         
         // UF do prestador
@@ -334,20 +334,12 @@ class Dimob_model extends CI_Model {
         // Tipo do Imóvel (U = Urbano, R = Rural) + 'R' para seguir formato do arquivo exemplo
         $linha .= 'U';
         
-        // Endereço do Imóvel (60 caracteres em MAIÚSCULAS, com "RUA" no início)
-        // Corrigindo a duplicação do número e formatando corretamente
-        $endereco_imovel = "RUA ";
+        // Endereço do Imóvel (60 caracteres em MAIÚSCULAS)
+        // Usando apenas o campo endereço sem adicionar "RUA"
+        $endereco_imovel = "";
         
         if (!empty($locacao['imovel']['endereco'])) {
             $endereco_imovel .= strtoupper(remove_accents($locacao['imovel']['endereco']));
-        }
-        
-        if (!empty($locacao['imovel']['numero'])) {
-            $endereco_imovel .= " " . $locacao['imovel']['numero'];
-        }
-        
-        if (!empty($locacao['imovel']['complemento'])) {
-            $endereco_imovel .= ", " . strtoupper(remove_accents($locacao['imovel']['complemento']));
         }
         
         $linha .= str_pad(substr($endereco_imovel, 0, 60), 60, ' ', STR_PAD_RIGHT);
