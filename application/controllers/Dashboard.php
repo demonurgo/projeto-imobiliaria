@@ -13,6 +13,7 @@ class Dashboard extends CI_Controller {
         $this->load->model('Imovel_model');
         $this->load->model('Log_model');
         $this->load->model('Dimob_model');
+        $this->load->model('Tomador_model');
     }
 
     public function index() {
@@ -30,6 +31,7 @@ class Dashboard extends CI_Controller {
         
         // Carregar contadores para o dashboard
         $data['total_notas'] = $this->db->count_all('notas');
+        $data['total_tomadores'] = $this->db->count_all('tomadores');
         $data['total_inquilinos'] = $this->db->count_all('inquilinos');
         $data['total_imoveis'] = $this->db->count_all('imoveis');
         

@@ -35,6 +35,21 @@
         
         <div class="col-md-3 mb-4">
             <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0"><i class="fas fa-user"></i> Proprietários</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h1 class="display-4"><?= isset($total_tomadores) ? $total_tomadores : 0 ?></h1>
+                    <p class="card-text">Total de Proprietários Cadastrados</p>
+                    <a href="<?php echo base_url('tomadores'); ?>" class="btn btn-outline-primary">
+                        <i class="fas fa-eye"></i> Visualizar
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card h-100">
                 <div class="card-header bg-warning text-dark">
                     <h5 class="card-title mb-0"><i class="fas fa-user-tie"></i> Inquilinos</h5>
                 </div>
@@ -58,21 +73,6 @@
                     <p class="card-text">Total de Imóveis Cadastrados</p>
                     <a href="<?php echo base_url('imoveis'); ?>" class="btn btn-outline-info">
                         <i class="fas fa-eye"></i> Visualizar
-                    </a>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3 mb-4">
-            <div class="card h-100">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="card-title mb-0"><i class="fas fa-file-export"></i> DIMOB</h5>
-                </div>
-                <div class="card-body text-center">
-                    <h1 class="display-4"><?= isset($notas_ano_atual) ? $notas_ano_atual : 0 ?></h1>
-                    <p class="card-text">Notas para DIMOB <?= $ano_atual ?></p>
-                    <a href="<?php echo base_url('dimob'); ?>" class="btn btn-outline-primary">
-                        <i class="fas fa-cog"></i> Gerar DIMOB
                     </a>
                 </div>
             </div>
