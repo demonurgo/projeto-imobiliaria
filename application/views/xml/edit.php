@@ -180,6 +180,9 @@
                                                     data-endereco="<?= $imovel['endereco'] ?>"
                                                     data-numero="<?= $imovel['numero'] ?>"
                                                     data-complemento="<?= $imovel['complemento'] ?>"
+                                                    data-cidade="<?= $imovel['cidade'] ?>"
+                                                    data-uf="<?= $imovel['uf'] ?>"
+                                                    data-cep="<?= $imovel['cep'] ?>"
                                                     data-valor="<?= $imovel['valor_aluguel'] ?>"
                                                     <?= ($imovel['id'] == $nota['imovel_id']) ? 'selected' : '' ?>>
                                                     <?= $imovel['endereco'] ?> <?php if(!empty($imovel['numero'])): ?>, <?= $imovel['numero'] ?><?php endif; ?> <?php if(!empty($imovel['complemento'])): ?> - <?= $imovel['complemento'] ?><?php endif; ?> <?php if(!empty($imovel['valor_aluguel'])): ?>(Aluguel: R$ <?= number_format($imovel['valor_aluguel'], 2, ',', '.') ?>)<?php endif; ?>
@@ -207,6 +210,27 @@
                                             <div class="mb-3">
                                                 <label for="imovel_complemento" class="form-label">Complemento</label>
                                                 <input type="text" class="form-control" id="imovel_complemento" name="imovel_complemento" value="<?= isset($nota['imovel_complemento']) ? $nota['imovel_complemento'] : '' ?>">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="imovel_cidade" class="form-label">Cidade</label>
+                                                <input type="text" class="form-control" id="imovel_cidade" name="imovel_cidade" value="<?= isset($nota['imovel_cidade']) ? $nota['imovel_cidade'] : '' ?>">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-2">
+                                            <div class="mb-3">
+                                                <label for="imovel_uf" class="form-label">UF</label>
+                                                <input type="text" class="form-control" id="imovel_uf" name="imovel_uf" maxlength="2" value="<?= isset($nota['imovel_uf']) ? $nota['imovel_uf'] : '' ?>">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-3">
+                                            <div class="mb-3">
+                                                <label for="imovel_cep" class="form-label">CEP</label>
+                                                <input type="text" class="form-control" id="imovel_cep" name="imovel_cep" value="<?= isset($nota['imovel_cep']) ? $nota['imovel_cep'] : '' ?>">
                                             </div>
                                         </div>
                                         
@@ -292,6 +316,9 @@
         const imovelEndereco = document.getElementById('imovel_endereco');
         const imovelNumero = document.getElementById('imovel_numero');
         const imovelComplemento = document.getElementById('imovel_complemento');
+        const imovelCidade = document.getElementById('imovel_cidade');
+        const imovelUf = document.getElementById('imovel_uf');
+        const imovelCep = document.getElementById('imovel_cep');
         const valorAluguel = document.getElementById('valor_aluguel');
         
         function updateImovelFields() {
@@ -303,6 +330,9 @@
                 imovelEndereco.value = selectedOption.getAttribute('data-endereco') || '';
                 imovelNumero.value = selectedOption.getAttribute('data-numero') || '';
                 imovelComplemento.value = selectedOption.getAttribute('data-complemento') || '';
+                imovelCidade.value = selectedOption.getAttribute('data-cidade') || '';
+                imovelUf.value = selectedOption.getAttribute('data-uf') || '';
+                imovelCep.value = selectedOption.getAttribute('data-cep') || '';
                 valorAluguel.value = selectedOption.getAttribute('data-valor') || '';
             }
         }

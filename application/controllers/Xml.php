@@ -564,6 +564,9 @@ class Xml extends CI_Controller {
                 $nota['imovel_endereco'] = $imovel['endereco'];
                 $nota['imovel_numero'] = $imovel['numero'];
                 $nota['imovel_complemento'] = $imovel['complemento'];
+                $nota['imovel_cidade'] = $imovel['cidade'];
+                $nota['imovel_uf'] = $imovel['uf'];
+                $nota['imovel_cep'] = $imovel['cep'];
                 $nota['valor_aluguel'] = $imovel['valor_aluguel'];
             }
         }
@@ -611,6 +614,9 @@ class Xml extends CI_Controller {
             $imovel_endereco = $this->input->post('imovel_endereco');
             $imovel_numero = $this->input->post('imovel_numero');
             $imovel_complemento = $this->input->post('imovel_complemento');
+            $imovel_cidade = $this->input->post('imovel_cidade');
+            $imovel_uf = $this->input->post('imovel_uf');
+            $imovel_cep = $this->input->post('imovel_cep');
             $valor_aluguel = $this->input->post('valor_aluguel');
             
             // Criar ou atualizar imóvel
@@ -627,6 +633,18 @@ class Xml extends CI_Controller {
                 
                 if (!empty($imovel_complemento)) {
                     $imovel_data['complemento'] = $imovel_complemento;
+                }
+                
+                if (!empty($imovel_cidade)) {
+                    $imovel_data['cidade'] = $imovel_cidade;
+                }
+                
+                if (!empty($imovel_uf)) {
+                    $imovel_data['uf'] = $imovel_uf;
+                }
+                
+                if (!empty($imovel_cep)) {
+                    $imovel_data['cep'] = $imovel_cep;
                 }
                 
                 if (!empty($valor_aluguel)) {
@@ -658,6 +676,18 @@ class Xml extends CI_Controller {
                 
                 if (!empty($imovel_complemento)) {
                     $update_data['complemento'] = $imovel_complemento;
+                }
+                
+                if (!empty($imovel_cidade)) {
+                    $update_data['cidade'] = $imovel_cidade;
+                }
+                
+                if (!empty($imovel_uf)) {
+                    $update_data['uf'] = $imovel_uf;
+                }
+                
+                if (!empty($imovel_cep)) {
+                    $update_data['cep'] = $imovel_cep;
                 }
                 
                 $this->Imovel_model->update($imovel_id, $update_data);
