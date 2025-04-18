@@ -300,35 +300,32 @@ class Dimob_model extends CI_Model {
         // Data do Contrato (formato DDMMAAAA) - Usamos 25/07/2022 como no arquivo exemplo
         $linha .= '25072022';
         
-        // Valores mensais conforme modelo de arquivo que funciona
+        // Valores mensais usando os valores reais de cada mês
         // Para cada mês, adicionamos valor aluguel, comissão e imposto (ou zeros)
         for ($mes = 1; $mes <= 12; $mes++) {
-            // Usamos os valores do exemplo (ou zeros se não houver)
-            if ($mes == 1) { // Janeiro
-                $linha .= '000000000893190000000000992400000000000000';
-            } elseif ($mes == 2) { // Fevereiro
-                $linha .= '000000000999220000000000110200000000000000';
-            } elseif ($mes == 3) { // Março
-                $linha .= '000000000999220000000000110200000000000000';
-            } elseif ($mes == 4) { // Abril
-                $linha .= '000000000999220000000000110200000000000000';
-            } elseif ($mes == 5) { // Maio
-                $linha .= '000000000999220000000000110200000000000000';
-            } elseif ($mes == 6) { // Junho
-                $linha .= '000000001073470000000001192700000000000000';
-            } elseif ($mes == 7) { // Julho
-                $linha .= '000000001073470000000001192700000000000000';
-            } elseif ($mes == 8) { // Agosto
-                $linha .= '000000001073470000000001192700000000000000';
-            } elseif ($mes == 9) { // Setembro
-                $linha .= '000000001073470000000001192700000000000000';
-            } elseif ($mes == 10) { // Outubro
-                $linha .= '000000001073470000000001192700000000000000';
-            } elseif ($mes == 11) { // Novembro
-                $linha .= '000000001150670000000001278500000000000000';
-            } else { // Dezembro
-                $linha .= '000000001150670000000001278500000000000000';
-            }
+            // Obter os valores reais do mês (ou zero se não houver)
+            $aluguel = isset($locacao['valores_mensais'][$mes]['aluguel']) ? $locacao['valores_mensais'][$mes]['aluguel'] : 0;
+            $comissao = isset($locacao['valores_mensais'][$mes]['comissao']) ? $locacao['valores_mensais'][$mes]['comissao'] : 0;
+            
+            // Verificar se o locatário é pessoa física (CPF tem 11 dígitos ou menos)
+            $cpf_cnpj_inquilino = preg_replace('/[^0-9]/', '', $locacao['inquilino']['cpf_cnpj']);
+            $eh_pessoa_fisica = (strlen($cpf_cnpj_inquilino) <= 11);
+            
+            // Se for pessoa física, o imposto deve ser zero
+            $imposto = $eh_pessoa_fisica ? 0 : (isset($locacao['valores_mensais'][$mes]['imposto']) ? $locacao['valores_mensais'][$mes]['imposto'] : 0);
+            
+            // Converter para centavos (multiplicar por 100 e arredondar)
+            $aluguel_centavos = round($aluguel * 100);
+            $comissao_centavos = round($comissao * 100);
+            $imposto_centavos = round($imposto * 100);
+            
+            // Formatar com 14 caracteres, preenchidos com zeros à esquerda
+            $aluguel_formatado = str_pad($aluguel_centavos, 14, '0', STR_PAD_LEFT);
+            $comissao_formatada = str_pad($comissao_centavos, 14, '0', STR_PAD_LEFT);
+            $imposto_formatado = str_pad($imposto_centavos, 14, '0', STR_PAD_LEFT);
+            
+            // Concatenar os valores formatados
+            $linha .= $aluguel_formatado . $comissao_formatada . $imposto_formatado;
         }
         
         // Tipo do Imóvel (U = Urbano, R = Rural) + 'R' para seguir formato do arquivo exemplo
