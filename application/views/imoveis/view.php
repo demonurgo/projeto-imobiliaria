@@ -132,10 +132,10 @@
                                                 <tr>
                                                     <th>Número</th>
                                                     <th>Data Emissão</th>
-                                                    <th>Prestador</th>
                                                     <th>Tomador</th>
                                                     <th>Inquilino</th>
-                                                    <th>Valor</th>
+                                                    <th>Valor de Aluguel</th>
+                                                    <th>Valor de Comissão</th>
                                                     <th>Ações</th>
                                                 </tr>
                                             </thead>
@@ -144,7 +144,6 @@
                                                 <tr>
                                                     <td><?= $nota['numero'] ?></td>
                                                     <td><?= date('d/m/Y', strtotime($nota['data_emissao'])) ?></td>
-                                                    <td><?= $nota['prestador_nome'] ?></td>
                                                     <td><?= $nota['tomador_nome'] ?></td>
                                                     <td>
                                                         <?php if($nota['inquilino_id'] && isset($nota['inquilino_nome'])): ?>
@@ -153,6 +152,7 @@
                                                             <span class="badge bg-warning text-dark">Não identificado</span>
                                                         <?php endif; ?>
                                                     </td>
+                                                    <td>R$ <?= isset($nota['valor_aluguel']) ? number_format($nota['valor_aluguel'], 2, ',', '.') : (isset($imovel['valor_aluguel']) ? number_format($imovel['valor_aluguel'], 2, ',', '.') : '0,00') ?></td>
                                                     <td>R$ <?= number_format($nota['valor_servicos'], 2, ',', '.') ?></td>
                                                     <td>
                                                         <a href="<?= base_url('notas/view/'.$nota['id']) ?>" class="btn btn-info btn-sm">

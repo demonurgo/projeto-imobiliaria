@@ -372,6 +372,11 @@ class Xml extends CI_Controller {
                 'observacoes' => $observacoes
             );
             
+            // Armazenar o valor do aluguel na própria nota, não apenas no imóvel
+            if (isset($discriminacao_data['valor_aluguel'])) {
+                $nota_data['valor_aluguel'] = $discriminacao_data['valor_aluguel'];
+            }
+            
             $nota_id = $this->Nota_model->save($nota_data);
             
             if ($nota_id) {
@@ -745,7 +750,8 @@ class Xml extends CI_Controller {
                 'tomador_id' => $this->input->post('tomador_id'),
                 'status' => $cpf_cnpj_duplicado ? 'revisar' : 'atualizado',
                 'observacoes' => $cpf_cnpj_duplicado ? $observacoes : (isset($nota['observacoes']) ? $nota['observacoes'] : ''),
-                'editado_manualmente' => 1  // Marca como editado manualmente
+                'editado_manualmente' => 1,  // Marca como editado manualmente
+                'valor_aluguel' => $this->input->post('valor_aluguel') // Armazena o valor do aluguel na nota
             );
             
             // Adicionar referências aos inquilinos e imóveis, se existirem

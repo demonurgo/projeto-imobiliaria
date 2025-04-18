@@ -16,8 +16,8 @@ class Nota_model extends CI_Model {
                           inquilinos.nome as inquilino_nome,
                           inquilinos.cpf_cnpj as inquilino_cpf_cnpj,
                           imoveis.endereco as imovel_endereco,
-                          imoveis.valor_aluguel as valor_aluguel,
-                          imoveis.tipo_imovel as tipo_imovel');
+                          imoveis.tipo_imovel as tipo_imovel,
+                          COALESCE(notas.valor_aluguel, imoveis.valor_aluguel) as valor_aluguel');
         $this->db->from('notas');
         $this->db->join('prestadores', 'prestadores.id = notas.prestador_id', 'left');
         $this->db->join('tomadores', 'tomadores.id = notas.tomador_id', 'left');
@@ -36,8 +36,8 @@ class Nota_model extends CI_Model {
                           inquilinos.nome as inquilino_nome,
                           inquilinos.cpf_cnpj as inquilino_cpf_cnpj,
                           imoveis.endereco as imovel_endereco,
-                          imoveis.valor_aluguel as valor_aluguel,
-                          imoveis.tipo_imovel as tipo_imovel');
+                          imoveis.tipo_imovel as tipo_imovel,
+                          COALESCE(notas.valor_aluguel, imoveis.valor_aluguel) as valor_aluguel');
         $this->db->from('notas');
         $this->db->join('prestadores', 'prestadores.id = notas.prestador_id', 'left');
         $this->db->join('tomadores', 'tomadores.id = notas.tomador_id', 'left');
@@ -56,8 +56,8 @@ class Nota_model extends CI_Model {
                           inquilinos.nome as inquilino_nome,
                           inquilinos.cpf_cnpj as inquilino_cpf_cnpj,
                           imoveis.endereco as imovel_endereco,
-                          imoveis.valor_aluguel as valor_aluguel,
-                          imoveis.tipo_imovel as tipo_imovel');
+                          imoveis.tipo_imovel as tipo_imovel,
+                          COALESCE(notas.valor_aluguel, imoveis.valor_aluguel) as valor_aluguel');
         $this->db->from('notas');
         $this->db->join('prestadores', 'prestadores.id = notas.prestador_id', 'left');
         $this->db->join('tomadores', 'tomadores.id = notas.tomador_id', 'left');
@@ -73,11 +73,13 @@ class Nota_model extends CI_Model {
         $this->db->select('notas.*, 
                           prestadores.razao_social as prestador_nome, 
                           tomadores.razao_social as tomador_nome,
-                          inquilinos.nome as inquilino_nome');
+                          inquilinos.nome as inquilino_nome,
+                          COALESCE(notas.valor_aluguel, imoveis.valor_aluguel) as valor_aluguel');
         $this->db->from('notas');
         $this->db->join('prestadores', 'prestadores.id = notas.prestador_id', 'left');
         $this->db->join('tomadores', 'tomadores.id = notas.tomador_id', 'left');
         $this->db->join('inquilinos', 'inquilinos.id = notas.inquilino_id', 'left');
+        $this->db->join('imoveis', 'imoveis.id = notas.imovel_id', 'left');
         $this->db->where('notas.prestador_id', $prestador_id);
         $this->db->order_by('notas.data_emissao', 'DESC');
         
@@ -87,10 +89,12 @@ class Nota_model extends CI_Model {
     public function get_by_inquilino($inquilino_id) {
         $this->db->select('notas.*, 
                           prestadores.razao_social as prestador_nome, 
-                          tomadores.razao_social as tomador_nome');
+                          tomadores.razao_social as tomador_nome,
+                          COALESCE(notas.valor_aluguel, imoveis.valor_aluguel) as valor_aluguel');
         $this->db->from('notas');
         $this->db->join('prestadores', 'prestadores.id = notas.prestador_id', 'left');
         $this->db->join('tomadores', 'tomadores.id = notas.tomador_id', 'left');
+        $this->db->join('imoveis', 'imoveis.id = notas.imovel_id', 'left');
         $this->db->where('notas.inquilino_id', $inquilino_id);
         $this->db->order_by('notas.data_emissao', 'DESC');
         
@@ -101,11 +105,13 @@ class Nota_model extends CI_Model {
         $this->db->select('notas.*, 
                           prestadores.razao_social as prestador_nome, 
                           tomadores.razao_social as tomador_nome,
-                          inquilinos.nome as inquilino_nome');
+                          inquilinos.nome as inquilino_nome,
+                          COALESCE(notas.valor_aluguel, imoveis.valor_aluguel) as valor_aluguel');
         $this->db->from('notas');
         $this->db->join('prestadores', 'prestadores.id = notas.prestador_id', 'left');
         $this->db->join('tomadores', 'tomadores.id = notas.tomador_id', 'left');
         $this->db->join('inquilinos', 'inquilinos.id = notas.inquilino_id', 'left');
+        $this->db->join('imoveis', 'imoveis.id = notas.imovel_id', 'left');
         $this->db->where('notas.imovel_id', $imovel_id);
         $this->db->order_by('notas.data_emissao', 'DESC');
         
@@ -164,11 +170,13 @@ class Nota_model extends CI_Model {
         $this->db->select('notas.*, 
                           prestadores.razao_social as prestador_nome, 
                           tomadores.razao_social as tomador_nome,
-                          inquilinos.nome as inquilino_nome');
+                          inquilinos.nome as inquilino_nome,
+                          COALESCE(notas.valor_aluguel, imoveis.valor_aluguel) as valor_aluguel');
         $this->db->from('notas');
         $this->db->join('prestadores', 'prestadores.id = notas.prestador_id', 'left');
         $this->db->join('tomadores', 'tomadores.id = notas.tomador_id', 'left');
         $this->db->join('inquilinos', 'inquilinos.id = notas.inquilino_id', 'left');
+        $this->db->join('imoveis', 'imoveis.id = notas.imovel_id', 'left');
         $this->db->where('YEAR(notas.competencia)', $year);
         $this->db->order_by('notas.competencia', 'ASC');
         
@@ -179,11 +187,13 @@ class Nota_model extends CI_Model {
         $this->db->select('notas.*, 
                           prestadores.razao_social as prestador_nome, 
                           tomadores.razao_social as tomador_nome,
-                          inquilinos.nome as inquilino_nome');
+                          inquilinos.nome as inquilino_nome,
+                          COALESCE(notas.valor_aluguel, imoveis.valor_aluguel) as valor_aluguel');
         $this->db->from('notas');
         $this->db->join('prestadores', 'prestadores.id = notas.prestador_id', 'left');
         $this->db->join('tomadores', 'tomadores.id = notas.tomador_id', 'left');
         $this->db->join('inquilinos', 'inquilinos.id = notas.inquilino_id', 'left');
+        $this->db->join('imoveis', 'imoveis.id = notas.imovel_id', 'left');
         
         // Aplicar filtros
         if (!empty($filters)) {
